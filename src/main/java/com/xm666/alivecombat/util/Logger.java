@@ -1,4 +1,4 @@
-package com.xm666.alivecombat.utils;
+package com.xm666.alivecombat.util;
 
 import com.xm666.alivecombat.AliveCombatMod;
 

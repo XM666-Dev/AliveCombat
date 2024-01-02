@@ -30,9 +30,6 @@ public class MixinPlugin implements IMixinConfigPlugin {
         if (isMixinNamed(mixinClassName, "FastIndicatorMixin")) {
             return Config.fastIndicatorEnabled;
         }
-        if (isMixinNamed(mixinClassName, "FullAttackMixin")) {
-            return Config.fullAttackEnabled;
-        }
         return true;
     }
 

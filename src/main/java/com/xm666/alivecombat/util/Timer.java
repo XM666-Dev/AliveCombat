@@ -1,9 +1,9 @@
-package com.xm666.alivecombat.utils;
+package com.xm666.alivecombat.util;
 
 import net.minecraft.client.Minecraft;
 
 public class Timer {
-    public float stop_time;
+    public float stopTime;
     public float duration;
 
     public Timer() {
@@ -19,18 +19,18 @@ public class Timer {
     }
 
     public void start() {
-        stop_time = getCurrentTime() + duration;
+        stopTime = getCurrentTime() + duration;
     }
 
     public void stop() {
-        stop_time = 0.0F;
+        stopTime = 0.0F;
     }
 
-    public boolean is_started() {
-        return getCurrentTime() < stop_time;
+    public boolean isStarted() {
+        return getCurrentTime() < stopTime;
     }
 
-    public boolean is_stopped() {
-        return !is_started();
+    public boolean isStopped() {
+        return !isStarted();
     }
 }

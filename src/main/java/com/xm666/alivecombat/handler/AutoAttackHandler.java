@@ -1,7 +1,8 @@
 package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.Config;
-import com.xm666.alivecombat.utils.Timer;
+import com.xm666.alivecombat.util.ClientUtil;
+import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,28 +20,28 @@ public class AutoAttackHandler {
         }
     }
 
-    public static boolean getInput() {
+    public static boolean canAttack() {
         var mc = Minecraft.getInstance();
-        return switch (Config.autoAttackKeyMode) {
-            case CLICK -> mc.options.keyAttack.clickCount > 0;
-            case PRESS -> mc.options.keyAttack.isDown();
+        var hasEntity = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY;
+        return hasEntity && switch (Config.autoAttackMode) {
+            case CLICK -> timer.isStarted();
+            case PRESS ->
+                    mc.options.keyAttack.isDown() && mc.player != null && mc.player.getAttackStrengthScale(0.0F) >= 1.0F;
         };
     }
 
     public static void autoAttack() {
         var mc = Minecraft.getInstance();
-        var hasInput = getInput();
-        var hasTime = timer.is_started();
-        var hasEntity = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY;
-        if (hasInput) {
+        if (mc.options.keyAttack.clickCount > 0) {
             timer.start();
         }
-        if (hasTime && hasEntity) {
-            mc.startAttack();
+        if (canAttack()) {
+            ClientUtil.attack();
+            timer.stop();
         }
     }
 
-    @SubscribeEvent()
+    @SubscribeEvent
     public static void onPreClientTick(TickEvent.ClientTickEvent event) {
         Minecraft.getInstance().gameRenderer.pick(1.0F);
         autoAttack();
@@ -51,7 +52,7 @@ public class AutoAttackHandler {
         autoAttack();
     }
 
-    public enum KeyMode {
+    public enum Mode {
         CLICK,
         PRESS
     }

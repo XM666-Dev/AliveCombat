@@ -3,7 +3,6 @@
   "plugin": "com.xm666.alivecombat.MixinPlugin",
   "client": [
     "FastIndicatorMixin$GuiMixin",
-    "FullAttackMixin$MinecraftMixin",
     "SpamAttackMixin$LocalPlayerMixin",
     "SpamAttackMixin$MinecraftMixin",
     "SpamAttackMixin$MultiPlayerGameModeMixin"
