@@ -1,26 +1,22 @@
 package com.xm666.alivecombat.handler;
 
+import com.xm666.alivecombat.AliveCombatMod;
 import com.xm666.alivecombat.Config;
-import com.xm666.alivecombat.util.ClientUtil;
 import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.TickEvent;
 
 public class AutoAttackHandler {
     public static Timer timer = new Timer();
+    public static boolean canContinueAttack;
 
-    public static void load() {
-        if (Config.autoAttackEnabled) {
-            NeoForge.EVENT_BUS.register(AutoAttackHandler.class);
-            timer.duration = Config.autoAttackDuration;
-        }
-    }
-
-    public static boolean canAttack() {
+    public static boolean canAutoAttack() {
         var mc = Minecraft.getInstance();
         var hasEntity = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY;
         return hasEntity && switch (Config.autoAttackMode) {
@@ -30,30 +26,26 @@ public class AutoAttackHandler {
         };
     }
 
-    public static void autoAttack() {
-        var mc = Minecraft.getInstance();
-        if (mc.options.keyAttack.clickCount > 0) {
-            timer.start();
-        }
-        if (canAttack()) {
-            ClientUtil.attack();
-            timer.stop();
-        }
-    }
-
-    @SubscribeEvent
-    public static void onPreClientTick(TickEvent.ClientTickEvent event) {
-        Minecraft.getInstance().gameRenderer.pick(1.0F);
-        autoAttack();
-    }
-
     @SubscribeEvent
     public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
-        autoAttack();
+        canContinueAttack = false;
+        Minecraft.getInstance().handleKeybinds();
+        canContinueAttack = true;
     }
 
     public enum Mode {
         CLICK,
         PRESS
+    }
+
+    @Mod.EventBusSubscriber(modid = AliveCombatMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class Register {
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event) {
+            if (Config.autoAttackEnabled) {
+                NeoForge.EVENT_BUS.register(AutoAttackHandler.class);
+                timer.duration = Config.autoAttackDuration;
+            }
+        }
     }
 }

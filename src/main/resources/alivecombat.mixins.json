@@ -5,6 +5,7 @@
     "FastIndicatorMixin$GuiMixin",
     "SpamAttackMixin$LocalPlayerMixin",
     "SpamAttackMixin$MinecraftMixin",
-    "SpamAttackMixin$MultiPlayerGameModeMixin"
+    "SpamAttackMixin$MultiPlayerGameModeMixin",
+    "AutoAttackMixin$MinecraftMixin"
   ]
 }
