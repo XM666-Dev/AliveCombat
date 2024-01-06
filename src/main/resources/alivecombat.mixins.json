@@ -2,10 +2,12 @@
   "package": "com.xm666.alivecombat.mixin",
   "plugin": "com.xm666.alivecombat.MixinPlugin",
   "client": [
+    "AutoAttackMixin$MinecraftMixin",
     "FastIndicatorMixin$GuiMixin",
+    "PassAttackMixin$PassDeadMixin$GameRendererMixin",
+    "PassAttackMixin$PassNoColliderMixin$GameRendererMixin",
     "SpamAttackMixin$LocalPlayerMixin",
     "SpamAttackMixin$MinecraftMixin",
-    "SpamAttackMixin$MultiPlayerGameModeMixin",
-    "AutoAttackMixin$MinecraftMixin"
+    "SpamAttackMixin$MultiPlayerGameModeMixin"
   ]
 }

@@ -9,13 +9,14 @@ import org.spongepowered.asm.mixin.injection.At;
 
 public class AutoAttackMixin {
     @Mixin(Minecraft.class)
-    public static abstract class MinecraftMixin {
+    public static class MinecraftMixin {
         @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 13))
-        boolean modifyExpressionValue(boolean original) {
-            if (original) {
+        boolean modifyConsumeClick(boolean original) {
+            var noEntity = Minecraft.getInstance().crosshairPickEntity == null;
+            if (original && noEntity) {
                 AutoAttackHandler.timer.start();
             }
-            if (AutoAttackHandler.canAutoAttack()) {
+            if (!original && !noEntity && AutoAttackHandler.canAutoAttack()) {
                 AutoAttackHandler.timer.stop();
                 return true;
             }

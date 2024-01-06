@@ -15,12 +15,14 @@ public class Config {
     public static float autoAttackDuration;
     public static boolean spamAttackEnabled;
     public static boolean fastIndicatorEnabled;
+    public static boolean passNoColliderEnabled;
+    public static boolean passDeadEnabled;
 
-    public static <T> T get(String path, Object fallbackValue, String comment) {
-        var value = TypeUtil.tryCast(config.get(path), fallbackValue.getClass(), fallbackValue);
+    public static <T> T get(String path, T defaultValue, String comment) {
+        var value = TypeUtil.tryCast(config.get(path), defaultValue);
         config.set(path, value);
         config.setComment(path, comment);
-        return (T) value;
+        return value;
     }
 
     public static void load() {
@@ -41,6 +43,12 @@ public class Config {
         );
         fastIndicatorEnabled = get("fastIndicatorEnabled", true,
                 "Add frame interpolation effect, make the attack indicator smoother."
+        );
+        passNoColliderEnabled = get("passAttack.passNoCollider", true,
+                "Attack through no collider blocks."
+        );
+        passDeadEnabled = get("passAttack.passDeadEnabled", true,
+                "Attack through dead mobs."
         );
         config.save();
     }

@@ -10,10 +10,10 @@ public class FastIndicatorMixin {
     @Mixin(Gui.class)
     public static class GuiMixin {
         @ModifyVariable(method = "renderCrosshair", at = @At(value = "LOAD", ordinal = 2), name = "f")
-        float modifyVariable(float value) {
+        float modifyRenderScale(float value) {
             var mc = Minecraft.getInstance();
             if (mc.player == null) return value;
-            return value + mc.getPartialTick() / mc.player.getCurrentItemAttackStrengthDelay();
+            return Math.min(value + mc.getPartialTick() / mc.player.getCurrentItemAttackStrengthDelay(), 1.0F);
         }
     }
 }

@@ -1,28 +1,32 @@
 package com.xm666.alivecombat.util;
 
 public class TypeUtil {
-    public static <T extends Enum<T>> Object tryCast(Object sourceObject, Class<?> targetClass, Object fallbackValue) {
+    public static <T> T tryCast(Object sourceObject, T defaultValue) {
+        return (T) tryCast(sourceObject, defaultValue.getClass(), defaultValue);
+    }
+
+    public static <T extends Enum<T>> Object tryCast(Object sourceObject, Class<?> targetClass, Object defaultValue) {
         if (targetClass.isInstance(sourceObject)) {
             return targetClass.cast(sourceObject);
         } else if (Enum.class.isAssignableFrom(targetClass) && sourceObject instanceof String string) {
-            return tryParseEnum((Class<T>) targetClass, string, fallbackValue);
+            return tryParseEnum((Class<T>) targetClass, string, defaultValue);
         } else if (Number.class.isAssignableFrom(targetClass) && sourceObject instanceof String string) {
-            return tryParseNumber(targetClass, string, fallbackValue);
+            return tryParseNumber(targetClass, string, defaultValue);
         } else if (Number.class.isAssignableFrom(targetClass) && sourceObject instanceof Number number) {
-            return tryCastNumber(targetClass, number, fallbackValue);
+            return tryCastNumber(targetClass, number, defaultValue);
         }
-        return fallbackValue;
+        return defaultValue;
     }
 
-    public static <T extends Enum<T>> Object tryParseEnum(Class<T> enumClass, String value, Object fallbackValue) {
+    public static <T extends Enum<T>> Object tryParseEnum(Class<T> enumClass, String value, Object defaultValue) {
         try {
             return Enum.valueOf(enumClass, value);
         } catch (IllegalArgumentException e) {
-            return fallbackValue;
+            return defaultValue;
         }
     }
 
-    public static Object tryParseNumber(Class<?> numberClass, String value, Object fallbackValue) {
+    public static Object tryParseNumber(Class<?> numberClass, String value, Object defaultValue) {
         try {
             if (numberClass == Integer.class) {
                 return Integer.parseInt(value);
@@ -33,12 +37,12 @@ public class TypeUtil {
             } else if (numberClass == Double.class) {
                 return Double.parseDouble(value);
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
         }
-        return fallbackValue;
+        return defaultValue;
     }
 
-    public static Object tryCastNumber(Class<?> numberClass, Number value, Object fallbackValue) {
+    public static Object tryCastNumber(Class<?> numberClass, Number value, Object defaultValue) {
         if (numberClass == Integer.class) {
             return value.intValue();
         } else if (numberClass == Long.class) {
@@ -48,6 +52,6 @@ public class TypeUtil {
         } else if (numberClass == Double.class) {
             return value.doubleValue();
         }
-        return fallbackValue;
+        return defaultValue;
     }
 }

@@ -4,7 +4,6 @@ import com.xm666.alivecombat.AliveCombatMod;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -18,8 +17,7 @@ public class AutoAttackHandler {
 
     public static boolean canAutoAttack() {
         var mc = Minecraft.getInstance();
-        var hasEntity = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY;
-        return hasEntity && switch (Config.autoAttackMode) {
+        return switch (Config.autoAttackMode) {
             case CLICK -> timer.isStarted();
             case PRESS ->
                     mc.options.keyAttack.isDown() && mc.player != null && mc.player.getAttackStrengthScale(0.0F) >= 1.0F;
