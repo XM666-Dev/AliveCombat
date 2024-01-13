@@ -4,6 +4,8 @@
   "client": [
     "AutoAttackMixin$MinecraftMixin",
     "FastIndicatorMixin$GuiMixin",
+    "HoldAttackMixin$MinecraftMixin",
+    "PassAttackMixin$PassAllyMixin$GameRendererMixin",
     "PassAttackMixin$PassDeadMixin$GameRendererMixin",
     "PassAttackMixin$PassNoColliderMixin$GameRendererMixin",
     "SpamAttackMixin$LocalPlayerMixin",

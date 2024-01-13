@@ -8,7 +8,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import java.nio.file.Path;
 
 public class Config {
-    public static Path path = FMLPaths.CONFIGDIR.get().resolve(AliveCombatMod.MOD_ID + ".toml");
+    public static Path path = FMLPaths.CONFIGDIR.get().resolve(AliveCombat.MODID + ".toml");
     public static CommentedFileConfig config = CommentedFileConfig.of(path);
     public static boolean autoAttackEnabled;
     public static AutoAttackHandler.Mode autoAttackMode;
@@ -17,9 +17,11 @@ public class Config {
     public static boolean fastIndicatorEnabled;
     public static boolean passNoColliderEnabled;
     public static boolean passDeadEnabled;
+    public static boolean passAllyEnabled;
+    public static boolean holdAttackEnabled;
 
     public static <T> T get(String path, T defaultValue, String comment) {
-        var value = TypeUtil.tryCast(config.get(path), defaultValue);
+        var value = TypeUtil.tryConvertValue(config.get(path), defaultValue);
         config.set(path, value);
         config.setComment(path, comment);
         return value;
@@ -36,7 +38,7 @@ public class Config {
         );
         autoAttackDuration = get("autoAttack.duration", 5.0F,
                 "When use CLICK mode, how long does the automatic attack last.\n" +
-                        "In units of one tick. One tick is equal to 0.05 seconds."
+                        "In units of 1 tick. 1 tick is equal to 0.05 seconds."
         );
         spamAttackEnabled = get("spamAttackEnabled", true,
                 "Missing an attack won't reset your attack strength."
@@ -45,10 +47,16 @@ public class Config {
                 "Add frame interpolation effect, make the attack indicator smoother."
         );
         passNoColliderEnabled = get("passAttack.passNoCollider", true,
-                "Attack through no collider blocks."
+                "Attack through no collider blocks, such as grasses."
         );
         passDeadEnabled = get("passAttack.passDeadEnabled", true,
-                "Attack through dead mobs."
+                "Attack through dead mobs, while they are playing dead animation."
+        );
+        passAllyEnabled = get("passAttack.passAllyEnabled", true,
+                "Attack through allied mobs, such as your pet wolf. Press shift to disable."
+        );
+        holdAttackEnabled = get("holdAttackEnabled", true,
+                "Attack while using items. For example, you can attack while pulling the bow."
         );
         config.save();
     }

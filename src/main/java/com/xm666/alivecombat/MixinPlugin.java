@@ -1,9 +1,6 @@
 package com.xm666.alivecombat;
 
-import com.xm666.alivecombat.mixin.AutoAttackMixin;
-import com.xm666.alivecombat.mixin.FastIndicatorMixin;
-import com.xm666.alivecombat.mixin.PassAttackMixin;
-import com.xm666.alivecombat.mixin.SpamAttackMixin;
+import com.xm666.alivecombat.mixin.*;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -41,6 +38,10 @@ public class MixinPlugin implements IMixinConfigPlugin {
             return Config.passNoColliderEnabled;
         } else if (declaringClass == PassAttackMixin.PassDeadMixin.class) {
             return Config.passDeadEnabled;
+        } else if (declaringClass == PassAttackMixin.PassAllyMixin.class) {
+            return Config.passAllyEnabled;
+        } else if (declaringClass == HoldAttackMixin.class) {
+            return Config.holdAttackEnabled;
         }
         throw new RuntimeException();
     }

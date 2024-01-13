@@ -5,11 +5,11 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 
-@Mod(AliveCombatMod.MOD_ID)
-public class AliveCombatMod {
-    public static final String MOD_ID = "alivecombat";
+@Mod(AliveCombat.MODID)
+public class AliveCombat {
+    public static final String MODID = "alivecombat";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public AliveCombatMod(IEventBus modEventBus) {
+    public AliveCombat(IEventBus modEventBus) {
     }
 }

@@ -15,7 +15,7 @@ public class SpamAttackMixin {
     @Mixin(Minecraft.class)
     public static class MinecraftMixin {
         @ModifyExpressionValue(method = "startAttack", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;missTime:I", ordinal = 0))
-        int getMissTime(int original) {
+        int modifyMissTime(int original) {
             return 0;
         }
 

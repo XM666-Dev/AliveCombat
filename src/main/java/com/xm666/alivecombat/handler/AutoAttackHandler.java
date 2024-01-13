@@ -1,6 +1,6 @@
 package com.xm666.alivecombat.handler;
 
-import com.xm666.alivecombat.AliveCombatMod;
+import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ public class AutoAttackHandler {
 
     public static boolean canAutoAttack() {
         var mc = Minecraft.getInstance();
-        return switch (Config.autoAttackMode) {
+        return mc.crosshairPickEntity != null && switch (Config.autoAttackMode) {
             case CLICK -> timer.isStarted();
             case PRESS ->
                     mc.options.keyAttack.isDown() && mc.player != null && mc.player.getAttackStrengthScale(0.0F) >= 1.0F;
@@ -36,7 +36,7 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    @Mod.EventBusSubscriber(modid = AliveCombatMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @Mod.EventBusSubscriber(modid = AliveCombat.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class Register {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {

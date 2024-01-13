@@ -11,16 +11,15 @@ public class AutoAttackMixin {
     @Mixin(Minecraft.class)
     public static class MinecraftMixin {
         @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 13))
-        boolean modifyConsumeClick(boolean original) {
-            var noEntity = Minecraft.getInstance().crosshairPickEntity == null;
-            if (original && noEntity) {
+        boolean modifyKeyAttackClick(boolean clicked) {
+            if (clicked) {
                 AutoAttackHandler.timer.start();
             }
-            if (!original && !noEntity && AutoAttackHandler.canAutoAttack()) {
+            if (AutoAttackHandler.canAutoAttack()) {
                 AutoAttackHandler.timer.stop();
                 return true;
             }
-            return original;
+            return clicked;
         }
 
         @WrapWithCondition(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
