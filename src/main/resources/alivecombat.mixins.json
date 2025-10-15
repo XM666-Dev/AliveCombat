@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "package": "com.xm666.alivecombat.mixin",
+  "plugin": "com.xm666.alivecombat.MixinConfigPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "client": [
+    "AutoAttackMixin$MinecraftMixin",
+    "FastIndicatorMixin$GuiMixin",
+    "HoldAttackMixin$MinecraftMixin",
+    "PassAttackMixin$PassAllyMixin$GameRendererMixin",
+    "PassAttackMixin$PassCollisionlessMixin$EntityMixin",
+    "PassAttackMixin$PassCollisionlessMixin$GameRendererMixin",
+    "PassAttackMixin$PassDeadMixin$GameRendererMixin",
+    "SpamAttackMixin$LocalPlayerMixin",
+    "SpamAttackMixin$MinecraftMixin",
+    "SpamAttackMixin$MultiPlayerGameModeMixin"
+  ]
+}
