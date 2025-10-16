@@ -2,6 +2,7 @@ package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
+import com.xm666.alivecombat.MixinConfig;
 import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -9,6 +10,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 public class AutoAttackHandler {
     public static final Timer timer = new Timer();
@@ -28,11 +30,26 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     private static class AutoAttackHandlerClient {
+        @SubscribeEvent
+        static void onRenderFramePost(RenderFrameEvent.Post event) {
+            canContinueAttack = false;
+            var mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                mc.handleKeybinds();
+            }
+            canContinueAttack = true;
+        }
+    }
+
+    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    private static class AutoAttackHandlerConfig {
         @SubscribeEvent
         static void onModConfigLoading(ModConfigEvent.Loading event) {
             update();
+            if (MixinConfig.AUTO_ATTACK_ENABLED.get()) {
+                NeoForge.EVENT_BUS.register(AutoAttackHandlerClient.class);
+            }
         }
 
         @SubscribeEvent
@@ -42,16 +59,6 @@ public class AutoAttackHandler {
 
         static void update() {
             timer.duration = Config.AUTO_ATTACK_DURATION.get().floatValue();
-        }
-
-        @SubscribeEvent
-        static void onRenderFramePost(RenderFrameEvent.Post event) {
-            canContinueAttack = false;
-            var mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.handleKeybinds();
-            }
-            canContinueAttack = true;
         }
     }
 }
