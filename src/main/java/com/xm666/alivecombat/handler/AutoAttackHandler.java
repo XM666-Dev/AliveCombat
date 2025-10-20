@@ -30,6 +30,7 @@ public class AutoAttackHandler {
         PRESS
     }
 
+    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     private static class AutoAttackHandlerClient {
         @SubscribeEvent
         static void onRenderFramePost(RenderFrameEvent.Post event) {
@@ -42,8 +43,8 @@ public class AutoAttackHandler {
         }
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
-    private static class AutoAttackHandlerConfig {
+    //@EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    public static class AutoAttackHandlerConfig {
         @SubscribeEvent
         static void onModConfigLoading(ModConfigEvent.Loading event) {
             update();
@@ -57,7 +58,7 @@ public class AutoAttackHandler {
             update();
         }
 
-        static void update() {
+        public static void update() {
             timer.duration = Config.AUTO_ATTACK_DURATION.get().floatValue();
         }
     }
