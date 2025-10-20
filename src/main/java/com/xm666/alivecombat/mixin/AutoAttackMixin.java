@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class AutoAttackMixin {
     @Mixin(Minecraft.class)
     private static class MinecraftMixin {
-        @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 13))
+        @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 14))
         private boolean modifyConsumeClick(boolean clicked, @Share("autoAttacked") LocalBooleanRef autoAttacked) {
             if (clicked) {
                 AutoAttackHandler.timer.start();
