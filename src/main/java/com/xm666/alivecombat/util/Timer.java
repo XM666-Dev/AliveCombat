@@ -15,7 +15,7 @@ public class Timer {
 
     public static float getCurrentTime() {
         var minecraft = Minecraft.getInstance();
-        var timer = minecraft.getTimer();
+        var timer = minecraft.getDeltaTracker();
         return minecraft.clientTickCount + timer.getGameTimeDeltaPartialTick(true);
     }
 

@@ -44,7 +44,7 @@ public class FakeSweepHandler {
     }
 
     private static void sendParticles(double posX, double posY, double posZ, double xOffset, double zOffset) {
-        ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(getParticleType(), false, posX, posY, posZ, (float) xOffset, (float) 0.0, (float) zOffset, (float) 0.0, 0);
+        ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(getParticleType(), false, false, posX, posY, posZ, (float) xOffset, (float) 0.0, (float) zOffset, (float) 0.0, 0);
         handle(clientboundlevelparticlespacket);
     }
 
@@ -58,7 +58,7 @@ public class FakeSweepHandler {
                 double d4 = packet.getMaxSpeed() * packet.getZDist();
 
                 try {
-                    level.addParticle(packet.getParticle(), packet.isOverrideLimiter(), packet.getX(), packet.getY(), packet.getZ(), d0, d2, d4);
+                    level.addParticle(packet.getParticle(), packet.isOverrideLimiter(), false, packet.getX(), packet.getY(), packet.getZ(), d0, d2, d4);
                 } catch (Throwable throwable) {
                     Logger.warn("Could not spawn particle effect {}", packet.getParticle());
                 }
@@ -75,6 +75,7 @@ public class FakeSweepHandler {
                         level.addParticle(
                                 packet.getParticle(),
                                 packet.isOverrideLimiter(),
+                                false,
                                 packet.getX() + d1,
                                 packet.getY() + d3,
                                 packet.getZ() + d5,
@@ -93,19 +94,19 @@ public class FakeSweepHandler {
 
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(type));
+        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(type)).get().value();
     }
 
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type)).get().value();
     }
 
     public static class FakeSweepHandlerClient {
         @SubscribeEvent
         static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (player.level().isClientSide) {
+            if (player.level().isClientSide()) {
                 var weaponItem = player.getWeaponItem();
                 var tags = weaponItem.getTags().map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.toSet());
                 if (tags.contains("c:tools/melee_weapon")) {
