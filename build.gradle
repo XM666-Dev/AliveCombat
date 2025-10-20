@@ -25,7 +25,7 @@ base {
     archivesName = mod_id
 }
 
-// Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
+// Mojang ships Java 21 to end users in 1.20.6, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 neoForge {
@@ -133,18 +133,6 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-
-    // Compiles against and includes the supported version of examplelib
-    //   from 2.0 (inclusive)
-    jarJar(implementation(group: 'com.googlecode.aviator', name: 'aviator')) {
-        version {
-            // Version used in your workspace and bundled in mod jar
-            prefer '5.4.3'
-        }
-    }
-
-    // This adds the library to all the runs
-    //additionalRuntimeClasspath 'com.googlecode.aviator:aviator:5.4.3'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
