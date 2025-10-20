@@ -118,15 +118,16 @@ public class FakeSweepHandler {
 
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(type));
     }
 
+    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     public static class FakeSweepHandlerClient {
         @SubscribeEvent
         static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
             if (player.level().isClientSide) {
-                var weaponItem = player.getWeaponItem();
+                var weaponItem = player.getMainHandItem();
                 var tags = weaponItem.getTags().map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.toSet());
                 if (tags.contains("c:tools/melee_weapon") && !canSweep(event.getTarget())) {
                     sweep();
@@ -135,7 +136,7 @@ public class FakeSweepHandler {
         }
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    //@EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     public static class FakeSweepHandlerConfig {
         @SubscribeEvent
         static void onModConfigLoading(ModConfigEvent.Loading event) {

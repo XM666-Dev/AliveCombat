@@ -11,8 +11,7 @@ public class FastIndicatorMixin {
     public static class GuiMixin {
         @ModifyArg(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getAttackStrengthScale(F)F"))
         private float modifyAdjustTicks(float adjustTicks) {
-            var timer = Minecraft.getInstance().getTimer();
-            return adjustTicks + timer.getGameTimeDeltaPartialTick(true);
+            return adjustTicks + Minecraft.getInstance().getPartialTick();
         }
     }
 }
