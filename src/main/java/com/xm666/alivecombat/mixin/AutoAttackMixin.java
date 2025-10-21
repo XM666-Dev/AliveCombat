@@ -13,7 +13,6 @@ public class AutoAttackMixin {
         @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 13))
         private boolean modifyConsumeClick(boolean clicked) {
             if (clicked) {
-                AutoAttackHandler.AutoAttackHandlerConfig.update();
                 AutoAttackHandler.timer.start();
             }
             if (AutoAttackHandler.canAutoAttack()) {

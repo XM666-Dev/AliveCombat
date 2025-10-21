@@ -6,8 +6,9 @@ import com.xm666.alivecombat.MixinConfig;
 import com.xm666.alivecombat.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -30,7 +31,6 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     private static class AutoAttackHandlerClient {
         @SubscribeEvent
         static void onRenderFramePost(RenderFrameEvent.Post event) {
@@ -43,8 +43,12 @@ public class AutoAttackHandler {
         }
     }
 
-    //@EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
     public static class AutoAttackHandlerConfig {
+        public AutoAttackHandlerConfig(IEventBus modEventBus) {
+            modEventBus.register(AutoAttackHandlerConfig.class);
+        }
+
         @SubscribeEvent
         static void onModConfigLoading(ModConfigEvent.Loading event) {
             update();
@@ -58,7 +62,7 @@ public class AutoAttackHandler {
             update();
         }
 
-        public static void update() {
+        static void update() {
             timer.duration = Config.AUTO_ATTACK_DURATION.get().floatValue();
         }
     }
