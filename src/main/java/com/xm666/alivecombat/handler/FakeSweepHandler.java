@@ -21,8 +21,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
@@ -121,7 +122,6 @@ public class FakeSweepHandler {
         return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(type));
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     public static class FakeSweepHandlerClient {
         @SubscribeEvent
         static void onAttackEntity(AttackEntityEvent event) {
@@ -136,8 +136,12 @@ public class FakeSweepHandler {
         }
     }
 
-    //@EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
     public static class FakeSweepHandlerConfig {
+        public FakeSweepHandlerConfig(IEventBus modEventBus) {
+            modEventBus.register(FakeSweepHandlerConfig.class);
+        }
+
         @SubscribeEvent
         static void onModConfigLoading(ModConfigEvent.Loading event) {
             toggle();
