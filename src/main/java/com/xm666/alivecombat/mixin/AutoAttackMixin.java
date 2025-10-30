@@ -2,6 +2,8 @@ package com.xm666.alivecombat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.xm666.alivecombat.handler.AutoAttackHandler;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,13 +13,14 @@ public class AutoAttackMixin {
     @Mixin(Minecraft.class)
     private static class MinecraftMixin {
         @ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 13))
-        private boolean modifyConsumeClick(boolean clicked) {
+        private boolean modifyConsumeClick(boolean clicked, @Share("autoAttacked") LocalBooleanRef autoAttacked) {
             if (clicked) {
                 AutoAttackHandler.timer.start();
             }
-            if (AutoAttackHandler.canAutoAttack()) {
+            if (AutoAttackHandler.canAutoAttack() && !autoAttacked.get()) {
                 AutoAttackHandler.timer.stop();
                 clicked = true;
+                autoAttacked.set(true);
             }
             return clicked;
         }
