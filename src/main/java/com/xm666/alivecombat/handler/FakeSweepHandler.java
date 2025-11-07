@@ -26,11 +26,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.ToolActions;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
-import net.neoforged.neoforge.event.entity.player.SweepAttackEvent;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,25 +40,22 @@ public class FakeSweepHandler {
     private static boolean canSweep(Entity target) {
         var player = Objects.requireNonNull(Minecraft.getInstance().player);
         float f2 = player.getAttackStrengthScale(0.5F);
-        boolean flag4 = f2 > 0.9F;
-        boolean flag;
-        flag = player.isSprinting() && flag4;
 
-        boolean flag1 = flag4 && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
-        CriticalHitEvent critEvent = CommonHooks.fireCriticalHit(player, target, flag1, flag1 ? 1.5F : 1.0F);
+        boolean flag = f2 > 0.9F;
+        boolean flag1 = player.isSprinting() && flag;
 
-        boolean flag2 = false;
+        boolean flag2 = flag && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
+        CriticalHitEvent critEvent = CommonHooks.fireCriticalHit(player, target, flag2, flag2 ? 1.5F : 1.0F);
+        flag2 = critEvent.isCriticalHit();
+
+        boolean flag3 = false;
         double d0 = player.walkDist - player.walkDistO;
-        boolean critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
-        if (flag4 && !critBlocksSweep && !flag && player.onGround() && d0 < (double) player.getSpeed()) {
+        if (flag && !flag2 && !flag1 && player.onGround() && d0 < (double) player.getSpeed()) {
             ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-            flag2 = itemstack.canPerformAction(ItemAbilities.SWORD_SWEEP);
+            flag3 = itemstack.canPerformAction(ToolActions.SWORD_SWEEP);
         }
 
-        SweepAttackEvent sweepEvent = CommonHooks.fireSweepAttack(player, target, flag2);
-        flag2 = sweepEvent.isSweeping();
-
-        return flag2;
+        return flag3;
     }
 
     private static void sweep() {
