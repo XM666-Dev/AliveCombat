@@ -4,27 +4,62 @@ import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.util.Logger;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
+import net.neoforged.neoforge.event.entity.player.SweepAttackEvent;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class FakeSweepHandler {
     private static final RandomSource random = RandomSource.create();
+
+    private static boolean canSweep(Entity target) {
+        var player = Objects.requireNonNull(Minecraft.getInstance().player);
+        float f2 = player.getAttackStrengthScale(0.5F);
+        boolean flag4 = f2 > 0.9F;
+        boolean flag;
+        flag = player.isSprinting() && flag4;
+
+        boolean flag1 = flag4 && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
+        CriticalHitEvent critEvent = CommonHooks.fireCriticalHit(player, target, flag1, flag1 ? 1.5F : 1.0F);
+
+        boolean flag2 = false;
+        double d0 = player.walkDist - player.walkDistO;
+        boolean critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
+        if (flag4 && !critBlocksSweep && !flag && player.onGround() && d0 < (double) player.getSpeed()) {
+            ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
+            flag2 = itemstack.canPerformAction(ItemAbilities.SWORD_SWEEP);
+        }
+
+        SweepAttackEvent sweepEvent = CommonHooks.fireSweepAttack(player, target, flag2);
+        flag2 = sweepEvent.isSweeping();
+
+        return flag2;
+    }
 
     private static void sweep() {
         Player player = Minecraft.getInstance().player;
@@ -39,51 +74,36 @@ public class FakeSweepHandler {
         if (player != null) {
             double d0 = -Mth.sin(player.getYRot() * ((float) Math.PI / 180F));
             double d1 = Mth.cos(player.getYRot() * ((float) Math.PI / 180F));
-            sendParticles(player.getX() + d0, player.getY(0.5F), player.getZ() + d1, d0, d1);
+            sendParticles(getParticleType(), player.getX() + d0, player.getY(0.5), player.getZ() + d1, 0, d0, 0.0, d1, 0.0);
         }
     }
 
-    private static void sendParticles(double posX, double posY, double posZ, double xOffset, double zOffset) {
-        ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(getParticleType(), false, posX, posY, posZ, (float) xOffset, (float) 0.0, (float) zOffset, (float) 0.0, 0);
-        handle(clientboundlevelparticlespacket);
-    }
-
-    private static void handle(ClientboundLevelParticlesPacket packet) {
-        Player player = Minecraft.getInstance().player;
-        if (player != null) {
-            Level level = player.level();
-            if (packet.getCount() == 0) {
-                double d0 = packet.getMaxSpeed() * packet.getXDist();
-                double d2 = packet.getMaxSpeed() * packet.getYDist();
-                double d4 = packet.getMaxSpeed() * packet.getZDist();
+    private static <T extends ParticleOptions> void sendParticles(T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed) {
+        BlockPos blockpos = Objects.requireNonNull(Minecraft.getInstance().player).blockPosition();
+        if (blockpos.closerToCenterThan(new Vec3(posX, posY, posZ), 32.0F)) {
+            if (particleCount == 0) {
+                double d0 = speed * xOffset;
+                double d2 = speed * yOffset;
+                double d4 = speed * zOffset;
 
                 try {
-                    level.addParticle(packet.getParticle(), packet.isOverrideLimiter(), packet.getX(), packet.getY(), packet.getZ(), d0, d2, d4);
+                    Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, posX, posY, posZ, d0, d2, d4);
                 } catch (Throwable throwable) {
-                    Logger.warn("Could not spawn particle effect {}", packet.getParticle());
+                    Logger.warn("Could not spawn particle effect {}", type);
                 }
             } else {
-                for (int i = 0; i < packet.getCount(); i++) {
-                    double d1 = random.nextGaussian() * (double) packet.getXDist();
-                    double d3 = random.nextGaussian() * (double) packet.getYDist();
-                    double d5 = random.nextGaussian() * (double) packet.getZDist();
-                    double d6 = random.nextGaussian() * (double) packet.getMaxSpeed();
-                    double d7 = random.nextGaussian() * (double) packet.getMaxSpeed();
-                    double d8 = random.nextGaussian() * (double) packet.getMaxSpeed();
+                for (int i = 0; i < particleCount; ++i) {
+                    double d1 = random.nextGaussian() * xOffset;
+                    double d3 = random.nextGaussian() * yOffset;
+                    double d5 = random.nextGaussian() * zOffset;
+                    double d6 = random.nextGaussian() * speed;
+                    double d7 = random.nextGaussian() * speed;
+                    double d8 = random.nextGaussian() * speed;
 
                     try {
-                        level.addParticle(
-                                packet.getParticle(),
-                                packet.isOverrideLimiter(),
-                                packet.getX() + d1,
-                                packet.getY() + d3,
-                                packet.getZ() + d5,
-                                d6,
-                                d7,
-                                d8
-                        );
+                        Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, posX + d1, posY + d3, posZ + d5, d6, d7, d8);
                     } catch (Throwable throwable) {
-                        Logger.warn("Could not spawn particle effect {}", packet.getParticle());
+                        Logger.warn("Could not spawn particle effect {}", type);
                         return;
                     }
                 }
@@ -108,7 +128,7 @@ public class FakeSweepHandler {
             if (player.level().isClientSide) {
                 var weaponItem = player.getWeaponItem();
                 var tags = weaponItem.getTags().map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.toSet());
-                if (tags.contains("c:tools/melee_weapon")) {
+                if (tags.contains("c:tools/melee_weapon") && !canSweep(event.getTarget())) {
                     sweep();
                 }
             }
