@@ -14,11 +14,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -29,7 +27,6 @@ import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
-import net.neoforged.neoforge.event.entity.player.SweepAttackEvent;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,23 +37,23 @@ public class FakeSweepHandler {
     private static boolean canSweep(Entity target) {
         var player = Objects.requireNonNull(Minecraft.getInstance().player);
         float f2 = player.getAttackStrengthScale(0.5F);
-        boolean flag4 = f2 > 0.9F;
-        boolean flag;
-        flag = player.isSprinting() && flag4;
 
-        boolean flag1 = flag4 && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
+        boolean flag3 = f2 > 0.9F;
+        boolean flag;
+        flag = player.isSprinting() && flag3;
+
+        boolean flag1 = flag3 && player.fallDistance > (double) 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.isMobilityRestricted() && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
         CriticalHitEvent critEvent = CommonHooks.fireCriticalHit(player, target, flag1, flag1 ? 1.5F : 1.0F);
 
         boolean flag2 = false;
-        double d0 = player.walkDist - player.walkDistO;
         boolean critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
-        if (flag4 && !critBlocksSweep && !flag && player.onGround() && d0 < (double) player.getSpeed()) {
-            ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-            flag2 = itemstack.canPerformAction(ItemAbilities.SWORD_SWEEP);
+        if (flag3 && !critBlocksSweep && !flag && player.onGround()) {
+            double d0 = player.getKnownMovement().horizontalDistanceSqr();
+            double d1 = (double) player.getSpeed() * (double) 2.5F;
+            if (d0 < Mth.square(d1) && player.getItemInHand(InteractionHand.MAIN_HAND).canPerformAction(ItemAbilities.SWORD_SWEEP)) {
+                flag2 = true;
+            }
         }
-
-        SweepAttackEvent sweepEvent = CommonHooks.fireSweepAttack(player, target, flag2);
-        flag2 = sweepEvent.isSweeping();
 
         return flag2;
     }
@@ -87,7 +84,7 @@ public class FakeSweepHandler {
                 double d4 = speed * zOffset;
 
                 try {
-                    Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, posX, posY, posZ, d0, d2, d4);
+                    Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, false, posX, posY, posZ, d0, d2, d4);
                 } catch (Throwable throwable) {
                     Logger.warn("Could not spawn particle effect {}", type);
                 }
@@ -101,7 +98,7 @@ public class FakeSweepHandler {
                     double d8 = random.nextGaussian() * speed;
 
                     try {
-                        Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, posX + d1, posY + d3, posZ + d5, d6, d7, d8);
+                        Objects.requireNonNull(Minecraft.getInstance().level).addParticle(type, false, false, posX + d1, posY + d3, posZ + d5, d6, d7, d8);
                     } catch (Throwable throwable) {
                         Logger.warn("Could not spawn particle effect {}", type);
                         return;
@@ -113,19 +110,19 @@ public class FakeSweepHandler {
 
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(type));
+        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(type)).get().value();
     }
 
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type)).get().value();
     }
 
     public static class FakeSweepHandlerClient {
         @SubscribeEvent
         static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (player.level().isClientSide) {
+            if (player.level().isClientSide()) {
                 var weaponItem = player.getWeaponItem();
                 var tags = weaponItem.getTags().map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.toSet());
                 if (tags.contains("c:tools/melee_weapon") && !canSweep(event.getTarget())) {
