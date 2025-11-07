@@ -125,7 +125,7 @@ public class FakeSweepHandler {
             if (player.level().isClientSide) {
                 var weaponItem = player.getMainHandItem();
                 var tags = weaponItem.getTags().map(TagKey::location).map(ResourceLocation::toString).collect(Collectors.toSet());
-                if (tags.contains("c:tools/melee_weapon") && !canSweep(event.getTarget())) {
+                if (tags.contains("c:tools") && !canSweep(event.getTarget())) {
                     sweep();
                 }
             }
