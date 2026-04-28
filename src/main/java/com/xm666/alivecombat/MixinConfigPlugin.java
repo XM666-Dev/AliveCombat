@@ -20,6 +20,7 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         new ModContainer(new ModInfo(null, new IConfigurable() {
+            @SuppressWarnings("unchecked")
             @Override
             public <T> Optional<T> getConfigElement(String... key) {
                 if (key[0].equals("modId")) {
