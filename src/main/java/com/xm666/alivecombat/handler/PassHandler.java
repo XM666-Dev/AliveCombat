@@ -16,13 +16,8 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -33,12 +28,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.function.Function;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -76,13 +66,10 @@ public class PassHandler {
     public static boolean isHoldingTools(Entity entity) {
         if (!(entity instanceof LivingEntity living)) return false;
 
-        var weapon = living.getWeaponItem();
+        var weapon = living.getMainHandItem();
         var tags = weapon.getTags();
         return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s ->
-                s.equals("c:tools/melee_weapon") ||
-                        s.equals("c:tools/ranged_weapon") ||
-                        s.equals("c:tools/shield") ||
-                        s.equals("c:tools/mining_tool"));
+                s.equals("c:tools"));
     }
 
     public static boolean interacts(HitResult hitResult) {
@@ -166,7 +153,7 @@ public class PassHandler {
         } else {
             var useOnContext = new UseOnContext(player, hand, blockHitResult);
             if (event.getUseItem() != TriState.FALSE) {
-                var result = onItemUseFirst(item, useOnContext);
+                var result = item.onItemUseFirst(useOnContext);
                 if (result != InteractionResult.PASS) {
                     return result;
                 }
@@ -186,7 +173,7 @@ public class PassHandler {
                 }
 
                 if (itemInteractionResult == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && hand == InteractionHand.MAIN_HAND) {
-                    var interactionResult = useWithoutItem(blockState, fakeClientLevel, player, blockHitResult);
+                    var interactionResult = blockState.useWithoutItem(fakeClientLevel, player, blockHitResult);
                     if (interactionResult.consumesAction()) {
                         return interactionResult;
                     }
@@ -196,44 +183,10 @@ public class PassHandler {
             if (event.getUseItem().isFalse()) {
                 return InteractionResult.PASS;
             } else if (event.getUseItem().isTrue() || !item.isEmpty() && !player.getCooldowns().isOnCooldown(item.getItem())) {
-                return useOn(item, useOnContext);
+                return item.useOn(useOnContext);
             }
             return InteractionResult.PASS;
         }
-    }
-
-    private static InteractionResult onItemUseFirst(ItemStack item, UseOnContext context) {
-        var event = NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_BEFORE_BLOCK));
-        return event.isCanceled() ? event.getCancellationResult().result() : onItemUse(item, context, (c) -> item.getItem().onItemUseFirst(item, context));
-    }
-
-    private static InteractionResult onItemUse(ItemStack item, UseOnContext context, Function<UseOnContext, InteractionResult> callback) {
-        var player = context.getPlayer();
-        var blockpos = context.getClickedPos();
-        if (player != null && !player.getAbilities().mayBuild && !item.canPlaceOnBlockInAdventureMode(new BlockInWorld(context.getLevel(), blockpos, false)))
-            return InteractionResult.PASS;
-
-        return callback.apply(context);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private static InteractionResult useWithoutItem(BlockState blockState, Level level, Player player, BlockHitResult hitResult) {
-        try {
-            var method = BlockBehaviour.class.getDeclaredMethod("useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
-            method.setAccessible(true);
-            return (InteractionResult) method.invoke(blockState.getBlock(), blockState, level, hitResult.getBlockPos(), player, hitResult);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static InteractionResult useOn(ItemStack item, UseOnContext context) {
-        var event = NeoForge.EVENT_BUS.post(new UseItemOnBlockEvent(context, UseItemOnBlockEvent.UsePhase.ITEM_AFTER_BLOCK));
-        if (event.isCanceled()) return event.getCancellationResult().result();
-
-        if (!context.getLevel().isClientSide) return CommonHooks.onPlaceItemIntoWorld(context);
-
-        return onItemUse(item, context, (c) -> item.getItem().useOn(context));
     }
 
     private static InteractionResult usesItem() {

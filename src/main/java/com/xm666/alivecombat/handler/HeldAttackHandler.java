@@ -13,6 +13,6 @@ public class HeldAttackHandler {
 
         var item = living.getUseItem();
         var tags = item.getTags();
-        return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/shield"));
+        return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/shields"));
     }
 }

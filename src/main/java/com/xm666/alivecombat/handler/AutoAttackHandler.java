@@ -7,8 +7,9 @@ import com.xm666.alivecombat.timer.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -31,7 +32,7 @@ public class AutoAttackHandler {
                 yield running;
             }
             case PRESS -> {
-                var adjustTicks = 0.5F * mc.getTimer().getGameTimeDeltaPartialTick(true);
+                var adjustTicks = 0.5F * mc.getPartialTick();
                 yield mc.player.getAttackStrengthScale(adjustTicks) > 0.9F && mc.options.keyAttack.isDown();
             }
         };
@@ -42,7 +43,7 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    private static class AutoAttackClient {
+    public static class AutoAttackClient {
         @SubscribeEvent
         public static void onRenderFramePost(RenderFrameEvent.Post event) {
             var mc = Minecraft.getInstance();
@@ -54,8 +55,12 @@ public class AutoAttackHandler {
         }
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
-    private static class AutoAttackConfig {
+    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
+    public static class AutoAttackConfig {
+        public AutoAttackConfig(IEventBus modEventBus) {
+            modEventBus.register(AutoAttackConfig.class);
+        }
+
         @SubscribeEvent
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
             if (!MixinConfig.AUTO_ATTACK_ENABLED.get()) return;

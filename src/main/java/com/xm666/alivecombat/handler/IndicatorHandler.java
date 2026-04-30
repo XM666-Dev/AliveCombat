@@ -6,7 +6,6 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TridentItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class IndicatorHandler {
     public static float getChargeScale(LivingEntity living, float adjustTicks) {
@@ -16,7 +15,7 @@ public class IndicatorHandler {
         var chargeDuration = getChargeDuration(item, living);
         if (chargeDuration == Integer.MAX_VALUE) return 1.0F;
 
-        var usingTicks = item.getUseDuration(living) - living.getUseItemRemainingTicks();
+        var usingTicks = item.getUseDuration() - living.getUseItemRemainingTicks();
         return Mth.clamp((usingTicks + adjustTicks) / chargeDuration, 0.0F, 1.0F);
     }
 
@@ -26,8 +25,7 @@ public class IndicatorHandler {
                 return 20;
             }
             case CrossbowItem ignored -> {
-                var f = EnchantmentHelper.modifyCrossbowChargingTime(stack, living, 1.25F);
-                return Mth.floor(f * 20.0F);
+                return CrossbowItem.getChargeDuration(stack);
             }
             case TridentItem ignored -> {
                 return 10;

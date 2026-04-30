@@ -17,12 +17,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.ToolActions;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
 public class AttackParticleHandler {
@@ -37,17 +38,16 @@ public class AttackParticleHandler {
 
         var crit = full && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
         var critEvent = CommonHooks.fireCriticalHit(player, target, crit, crit ? 1.5F : 1.0F);
+        crit = critEvent.isCriticalHit();
 
         var sweep = false;
         var delta = player.walkDist - player.walkDistO;
-        var critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
-        if (full && !critBlocksSweep && !sprint && player.onGround() && delta < player.getSpeed()) {
+        if (full && !crit && !sprint && player.onGround() && delta < player.getSpeed()) {
             var item = player.getItemInHand(InteractionHand.MAIN_HAND);
-            sweep = item.canPerformAction(ItemAbilities.SWORD_SWEEP);
+            sweep = item.canPerformAction(ToolActions.SWORD_SWEEP);
         }
 
-        var sweepEvent = CommonHooks.fireSweepAttack(player, target, sweep);
-        return sweepEvent.isSweeping();
+        return sweep;
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -87,12 +87,12 @@ public class AttackParticleHandler {
 
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(type));
+        return BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(type));
     }
 
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(new ResourceLocation(type));
     }
 
     public static class AttackParticleClient {
@@ -101,9 +101,9 @@ public class AttackParticleHandler {
             var player = event.getEntity();
             if (!player.level().isClientSide || canSweep(event.getTarget())) return;
 
-            var weapon = player.getWeaponItem();
+            var weapon = player.getMainHandItem();
             var tags = weapon.getTags();
-            var melee = tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/melee_weapon"));
+            var melee = tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools"));
             if (!melee) return;
 
             var attackStrengthScale = player.getAttackStrengthScale(0.5F);
@@ -114,8 +114,12 @@ public class AttackParticleHandler {
         }
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
     public static class AttackParticleConfig {
+        public AttackParticleConfig(IEventBus modEventBus) {
+            modEventBus.register(AttackParticleConfig.class);
+        }
+
         @SubscribeEvent
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
             toggle();
