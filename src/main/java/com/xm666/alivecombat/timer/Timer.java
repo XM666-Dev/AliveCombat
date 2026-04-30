@@ -20,8 +20,8 @@ public class Timer {
     }
 
     private static float tickCount() {
-        var timer = Minecraft.getInstance().getTimer();
-        return ticks + timer.getGameTimeDeltaPartialTick(true);
+        var mc = Minecraft.getInstance();
+        return ticks + mc.getTimer().getGameTimeDeltaPartialTick(true);
     }
 
     public void start() {
@@ -37,7 +37,7 @@ public class Timer {
     }
 
     @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
-    private static class TimerClient {
+    public static class TimerClient {
         @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Pre event) {
             if (Minecraft.getInstance().isPaused()) return;

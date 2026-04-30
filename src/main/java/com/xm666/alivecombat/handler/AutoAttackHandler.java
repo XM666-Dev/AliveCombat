@@ -42,7 +42,7 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    private static class AutoAttackClient {
+    public static class AutoAttackClient {
         @SubscribeEvent
         public static void onRenderFramePost(RenderFrameEvent.Post event) {
             var mc = Minecraft.getInstance();
@@ -55,7 +55,7 @@ public class AutoAttackHandler {
     }
 
     @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
-    private static class AutoAttackConfig {
+    public static class AutoAttackConfig {
         @SubscribeEvent
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
             if (!MixinConfig.AUTO_ATTACK_ENABLED.get()) return;
