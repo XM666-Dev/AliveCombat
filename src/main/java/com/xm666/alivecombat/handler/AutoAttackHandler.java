@@ -3,26 +3,37 @@ package com.xm666.alivecombat.handler;
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.MixinConfig;
-import com.xm666.alivecombat.util.Timer;
+import com.xm666.alivecombat.timer.Timer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 public class AutoAttackHandler {
-    public static final Timer timer = new Timer();
+    public static final Timer timer = new Timer(() -> Config.AUTO_ATTACK_DURATION.get().floatValue());
     public static boolean canContinueAttack = true;
 
-    public static boolean canAutoAttack() {
+    @SuppressWarnings("DataFlowIssue")
+    public static boolean readyAttack() {
         var mc = Minecraft.getInstance();
-        return mc.crosshairPickEntity != null && switch (Config.AUTO_ATTACK_MODE.get()) {
-            case CLICK -> timer.isRunning();
-            case PRESS ->
-                    mc.options.keyAttack.isDown() && mc.player != null && mc.player.getAttackStrengthScale(0.0F) >= 1.0F;
+        if (!(mc.hitResult instanceof EntityHitResult)) return false;
+
+        return switch (Config.AUTO_ATTACK_MODE.get()) {
+            case CLICK -> {
+                var running = timer.isRunning();
+                if (running) {
+                    timer.stop();
+                }
+                yield running;
+            }
+            case PRESS -> {
+                var adjustTicks = 0.5F * mc.getTimer().getGameTimeDeltaPartialTick(true);
+                yield mc.player.getAttackStrengthScale(adjustTicks) > 0.9F && mc.options.keyAttack.isDown();
+            }
         };
     }
 
@@ -31,39 +42,25 @@ public class AutoAttackHandler {
         PRESS
     }
 
-    private static class AutoAttackHandlerClient {
+    private static class AutoAttackClient {
         @SubscribeEvent
-        static void onRenderFramePost(RenderFrameEvent.Post event) {
-            canContinueAttack = false;
+        public static void onRenderFramePost(RenderFrameEvent.Post event) {
             var mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.handleKeybinds();
-            }
+            if (mc.player == null) return;
+
+            canContinueAttack = false;
+            mc.handleKeybinds();
             canContinueAttack = true;
         }
     }
 
-    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
-    public static class AutoAttackHandlerConfig {
-        public AutoAttackHandlerConfig(IEventBus modEventBus) {
-            modEventBus.register(AutoAttackHandlerConfig.class);
-        }
-
+    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    private static class AutoAttackConfig {
         @SubscribeEvent
-        static void onModConfigLoading(ModConfigEvent.Loading event) {
-            update();
-            if (MixinConfig.AUTO_ATTACK_ENABLED.get()) {
-                NeoForge.EVENT_BUS.register(AutoAttackHandlerClient.class);
-            }
-        }
+        public static void onModConfigLoading(ModConfigEvent.Loading event) {
+            if (!MixinConfig.AUTO_ATTACK_ENABLED.get()) return;
 
-        @SubscribeEvent
-        static void onModConfigReloading(ModConfigEvent.Reloading event) {
-            update();
-        }
-
-        static void update() {
-            timer.duration = Config.AUTO_ATTACK_DURATION.get().floatValue();
+            NeoForge.EVENT_BUS.register(AutoAttackClient.class);
         }
     }
 }
