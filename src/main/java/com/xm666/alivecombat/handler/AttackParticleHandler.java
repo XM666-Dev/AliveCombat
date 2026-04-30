@@ -87,12 +87,12 @@ public class AttackParticleHandler {
 
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(new ResourceLocation(type));
+        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(type));
     }
 
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(new ResourceLocation(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(type));
     }
 
     public static class AttackParticleClient {
