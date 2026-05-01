@@ -17,11 +17,16 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -29,6 +34,7 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.TriState;
+import org.jetbrains.annotations.NotNull;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -57,12 +63,6 @@ public class PassHandler {
         }
     }
 
-    public static HitResult filterHitResult(HitResult hitResult, Vec3 pos) {
-        var location = hitResult.getLocation();
-        var direction = Direction.getNearest(location.x - pos.x, location.y - pos.y, location.z - pos.z);
-        return BlockHitResult.miss(location, direction, BlockPos.containing(location));
-    }
-
     public static boolean isHoldingTools(Entity entity) {
         if (!(entity instanceof LivingEntity living)) return false;
 
@@ -75,9 +75,28 @@ public class PassHandler {
                         s.equals("c:tools/mining_tool"));
     }
 
+    public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
+        var collisionContext = CollisionContext.of(entity);
+        return new ClipContext(from, to, block, fluid, collisionContext) {
+            public @NotNull VoxelShape getBlockShape(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+                var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
+                var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
+                var interactionResult = interactsBlock(blockHitResult);
+                return interactionResult.consumesAction() ? voxelShape : Block.COLLIDER.get(blockState, level, pos, collisionContext);
+            }
+        };
+    }
+
+    public static HitResult filterHitResult(HitResult hitResult, Vec3 pos) {
+        var location = hitResult.getLocation();
+        var direction = Direction.getNearest(location.x - pos.x, location.y - pos.y, location.z - pos.z);
+        return BlockHitResult.miss(location, direction, BlockPos.containing(location));
+    }
+
     public static boolean interacts(HitResult hitResult) {
         var entityInteractionResult = interactsEntity(hitResult);
         if (entityInteractionResult.consumesAction()) return true;
+        if (entityInteractionResult == InteractionResult.FAIL) return false;
 
         var blockInteractionResult = interactsBlock(hitResult);
         if (blockInteractionResult.consumesAction()) return true;

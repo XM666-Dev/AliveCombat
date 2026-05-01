@@ -11,10 +11,12 @@
   },
   "client": [
     "AutoAttackMixin$MinecraftMixin",
+    "AutoAttackMixin$MultiPlayerGameModeMixin",
     "ChargeIndicatorMixin$GuiMixin",
     "HeldAttackMixin$MinecraftMixin",
     "PassMixin$PassAllyMixin$GameRendererMixin",
     "PassMixin$PassAllyMixin$LivingEntityMixin",
+    "PassMixin$PassCollisionlessExtraMixin$EntityMixin",
     "PassMixin$PassCollisionlessExtraMixin$GameRendererMixin",
     "PassMixin$PassCollisionlessMixin$EntityMixin",
     "PassMixin$PassCollisionlessMixin$GameRendererMixin",

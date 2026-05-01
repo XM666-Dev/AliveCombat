@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.objectweb.asm.Opcodes;
@@ -38,8 +39,8 @@ public class PassMixin {
         @Mixin(Entity.class)
         private static class EntityMixin {
             @WrapOperation(method = "pick", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/ClipContext$Block;OUTLINE:Lnet/minecraft/world/level/ClipContext$Block;", opcode = Opcodes.GETSTATIC))
-            private ClipContext.Block wrapClipContext(Operation<ClipContext.Block> original) {
-                return PassHandler.passCollisionless || PassHandler.passCollisionlessExtra ? ClipContext.Block.COLLIDER : original.call();
+            private ClipContext.Block wrapBlock(Operation<ClipContext.Block> original) {
+                return PassHandler.passCollisionless ? ClipContext.Block.COLLIDER : original.call();
             }
         }
     }
@@ -62,6 +63,14 @@ public class PassMixin {
                 var originalHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
                 PassHandler.passCollisionlessExtra = true;
                 return originalHitResult;
+            }
+        }
+
+        @Mixin(Entity.class)
+        private static class EntityMixin {
+            @WrapOperation(method = "pick", at = @At(value = "NEW", target = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/ClipContext;"))
+            private ClipContext wrapClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity, Operation<ClipContext> original) {
+                return PassHandler.passCollisionlessExtra ? PassHandler.getPassClipContext(from, to, block, fluid, entity) : original.call(from, to, block, fluid, entity);
             }
         }
     }
