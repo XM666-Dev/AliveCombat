@@ -31,7 +31,8 @@ public class AttackParticleHandler {
 
     @SuppressWarnings("DataFlowIssue")
     private static boolean canSweep(Entity target) {
-        var player = Minecraft.getInstance().player;
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         var full = attackStrengthScale > 0.9F;
         var sprint = player.isSprinting() && full;

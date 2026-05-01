@@ -37,7 +37,7 @@ public class Timer {
     }
 
     @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
-    public static class TimerClient {
+    private static class TimerClient {
         @SubscribeEvent
         public static void onClientTick(ClientTickEvent.Pre event) {
             if (Minecraft.getInstance().isPaused()) return;
