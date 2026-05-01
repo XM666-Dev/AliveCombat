@@ -2,11 +2,12 @@ package com.xm666.alivecombat;
 
 import com.xm666.alivecombat.handler.AutoAttackHandler;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import org.jetbrains.annotations.NotNull;
 
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    public static final ModConfigSpec.EnumValue<AutoAttackHandler.Mode> AUTO_ATTACK_MODE = BUILDER
+    public static final ModConfigSpec.EnumValue<AutoAttackHandler.@NotNull Mode> AUTO_ATTACK_MODE = BUILDER
             .defineEnum("autoAttackMode", AutoAttackHandler.Mode.CLICK);
 
     public static final ModConfigSpec.DoubleValue AUTO_ATTACK_DURATION = BUILDER

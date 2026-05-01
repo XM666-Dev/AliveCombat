@@ -8,27 +8,32 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.util.TriState;
+import org.jetbrains.annotations.NotNull;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -57,9 +62,9 @@ public class PassHandler {
         }
     }
 
-    public static HitResult filterHitResult(HitResult hitResult, Vec3 pos) {
+    public static HitResult filterHitResult(HitResult hitResult, Vec3 eyePos) {
         var location = hitResult.getLocation();
-        var direction = Direction.getNearest(location.x - pos.x, location.y - pos.y, location.z - pos.z);
+        var direction = Direction.getApproximateNearest(location.x - eyePos.x, location.y - eyePos.y, location.z - eyePos.z);
         return BlockHitResult.miss(location, direction, BlockPos.containing(location));
     }
 
@@ -68,16 +73,28 @@ public class PassHandler {
 
         var weapon = living.getWeaponItem();
         var tags = weapon.getTags();
-        return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s ->
+        return tags.map(TagKey::location).map(Identifier::toString).anyMatch(s ->
                 s.equals("c:tools/melee_weapon") ||
                         s.equals("c:tools/ranged_weapon") ||
                         s.equals("c:tools/shield") ||
                         s.equals("c:tools/mining_tool"));
     }
 
+    public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
+        var collisionContext = CollisionContext.of(entity);
+        return new ClipContext(from, to, block, fluid, collisionContext) {
+            public @NotNull VoxelShape getBlockShape(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+                var blockHitResult = new BlockHitResult(to, Direction.getApproximateNearest(to.x - from.x, to.y - from.y, to.z - from.z), pos, false);
+                var interactionResult = interactsBlock(blockHitResult);
+                return (interactionResult instanceof InteractionResult.Success ? Block.OUTLINE : Block.COLLIDER).get(blockState, level, pos, collisionContext);
+            }
+        };
+    }
+
     public static boolean interacts(HitResult hitResult) {
         var entityInteractionResult = interactsEntity(hitResult);
         if (entityInteractionResult.consumesAction()) return true;
+        if (entityInteractionResult == InteractionResult.FAIL) return false;
 
         var blockInteractionResult = interactsBlock(hitResult);
         if (blockInteractionResult.consumesAction()) return true;
@@ -86,11 +103,16 @@ public class PassHandler {
         return usesItem().consumesAction();
     }
 
+    @SuppressWarnings("DataFlowIssue")
     private static InteractionResult interactsEntity(HitResult hitResult) {
         if (!(hitResult instanceof EntityHitResult entityHitResult)) return InteractionResult.PASS;
 
         var target = entityHitResult.getEntity();
         if (!fakeClientLevel.getWorldBorder().isWithinBounds(target.blockPosition())) return InteractionResult.FAIL;
+
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        if (!player.isWithinEntityInteractionRange(target, 0.0)) return InteractionResult.PASS;
 
         for (var hand : InteractionHand.values()) {
             var interactionResult = interactAt(fakeLocalPlayer, target, entityHitResult, hand);
@@ -152,7 +174,7 @@ public class PassHandler {
         if (event.isCanceled()) {
             return event.getCancellationResult();
         } else if (gameMode.getPlayerMode() == GameType.SPECTATOR) {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
         } else {
             var useOnContext = new UseOnContext(player, hand, blockHitResult);
             if (event.getUseItem() != TriState.FALSE) {
@@ -172,10 +194,10 @@ public class PassHandler {
 
                 var itemInteractionResult = blockState.useItemOn(player.getItemInHand(hand), fakeClientLevel, player, hand, blockHitResult);
                 if (itemInteractionResult.consumesAction()) {
-                    return itemInteractionResult.result();
+                    return itemInteractionResult;
                 }
 
-                if (itemInteractionResult == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && hand == InteractionHand.MAIN_HAND) {
+                if (itemInteractionResult instanceof InteractionResult.TryEmptyHandInteraction && hand == InteractionHand.MAIN_HAND) {
                     var interactionResult = blockState.useWithoutItem(fakeClientLevel, player, blockHitResult);
                     if (interactionResult.consumesAction()) {
                         return interactionResult;
@@ -185,7 +207,7 @@ public class PassHandler {
 
             if (event.getUseItem().isFalse()) {
                 return InteractionResult.PASS;
-            } else if (event.getUseItem().isTrue() || !item.isEmpty() && !player.getCooldowns().isOnCooldown(item.getItem())) {
+            } else if (event.getUseItem().isTrue() || !item.isEmpty() && !player.getCooldowns().isOnCooldown(item)) {
                 return item.useOn(useOnContext);
             }
             return InteractionResult.PASS;
@@ -211,12 +233,11 @@ public class PassHandler {
         if (gameMode.getPlayerMode() == GameType.SPECTATOR) return InteractionResult.PASS;
 
         var item = player.getItemInHand(hand);
-        if (player.getCooldowns().isOnCooldown(item.getItem())) return InteractionResult.PASS;
+        if (player.getCooldowns().isOnCooldown(item)) return InteractionResult.PASS;
 
         var cancelResult = CommonHooks.onItemRightClick(player, hand);
         if (cancelResult != null) return cancelResult;
 
-        var interactionResultHolder = item.use(fakeClientLevel, player, hand);
-        return interactionResultHolder.getResult();
+        return item.use(fakeClientLevel, player, hand);
     }
 }

@@ -31,7 +31,7 @@ public class AutoAttackHandler {
                 yield running;
             }
             case PRESS -> {
-                var adjustTicks = 0.5F * mc.getTimer().getGameTimeDeltaPartialTick(true);
+                var adjustTicks = 0.5F * mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
                 yield mc.player.getAttackStrengthScale(adjustTicks) > 0.9F && mc.options.keyAttack.isDown();
             }
         };

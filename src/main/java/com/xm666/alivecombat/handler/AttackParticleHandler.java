@@ -6,22 +6,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
@@ -30,22 +26,16 @@ public class AttackParticleHandler {
 
     @SuppressWarnings("DataFlowIssue")
     private static boolean canSweep(Entity target) {
-        var player = Minecraft.getInstance().player;
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         var full = attackStrengthScale > 0.9F;
         var sprint = player.isSprinting() && full;
 
-        var crit = full && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
+        var crit = full && player.canCriticalAttack(target);
         var critEvent = CommonHooks.fireCriticalHit(player, target, crit, crit ? 1.5F : 1.0F);
 
-        var sweep = false;
-        var delta = player.walkDist - player.walkDistO;
-        var critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
-        if (full && !critBlocksSweep && !sprint && player.onGround() && delta < player.getSpeed()) {
-            var item = player.getItemInHand(InteractionHand.MAIN_HAND);
-            sweep = item.canPerformAction(ItemAbilities.SWORD_SWEEP);
-        }
-
+        var sweep = player.isSweepAttack(full, critEvent.isCriticalHit() && critEvent.disableSweep(), sprint);
         var sweepEvent = CommonHooks.fireSweepAttack(player, target, sweep);
         return sweepEvent.isSweeping();
     }
@@ -69,7 +59,7 @@ public class AttackParticleHandler {
                 var yDist = speed * yOffset;
                 var zDist = speed * zOffset;
 
-                mc.level.addParticle(type, false, posX, posY, posZ, xDist, yDist, zDist);
+                mc.level.addParticle(type, false, false, posX, posY, posZ, xDist, yDist, zDist);
             } else {
                 for (var i = 0; i < particleCount; ++i) {
                     var xDist = random.nextGaussian() * xOffset;
@@ -79,31 +69,33 @@ public class AttackParticleHandler {
                     var ySpeed = random.nextGaussian() * speed;
                     var zSpeed = random.nextGaussian() * speed;
 
-                    mc.level.addParticle(type, false, posX + xDist, posY + yDist, posZ + zDist, xSpeed, ySpeed, zSpeed);
+                    mc.level.addParticle(type, false, false, posX + xDist, posY + yDist, posZ + zDist, xSpeed, ySpeed, zSpeed);
                 }
             }
         }
     }
 
+    @SuppressWarnings({"DataFlowIssue", "OptionalGetWithoutIsPresent"})
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(type));
+        return BuiltInRegistries.SOUND_EVENT.get(Identifier.tryParse(type)).get().value();
     }
 
+    @SuppressWarnings({"DataFlowIssue", "OptionalGetWithoutIsPresent"})
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(type));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(Identifier.tryParse(type)).get().value();
     }
 
     public static class AttackParticleClient {
         @SubscribeEvent
         public static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (!player.level().isClientSide || canSweep(event.getTarget())) return;
+            if (!player.level().isClientSide() || canSweep(event.getTarget())) return;
 
             var weapon = player.getWeaponItem();
             var tags = weapon.getTags();
-            var melee = tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/melee_weapon"));
+            var melee = tags.map(TagKey::location).map(Identifier::toString).anyMatch(s -> s.equals("c:tools/melee_weapon"));
             if (!melee) return;
 
             var attackStrengthScale = player.getAttackStrengthScale(0.5F);

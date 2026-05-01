@@ -21,7 +21,7 @@ public class Timer {
 
     private static float tickCount() {
         var mc = Minecraft.getInstance();
-        return ticks + mc.getTimer().getGameTimeDeltaPartialTick(true);
+        return ticks + mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
     }
 
     public void start() {

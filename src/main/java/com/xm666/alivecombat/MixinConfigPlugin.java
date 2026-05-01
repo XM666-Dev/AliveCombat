@@ -7,6 +7,7 @@ import net.neoforged.fml.loading.moddiscovery.ModInfo;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforgespi.language.IConfigurable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -51,7 +52,7 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
         var path = mixinClassName.substring(0, mixinClassName.lastIndexOf("$"));
         path = path.substring(path.lastIndexOf("$") + 1);
         path = path.substring(path.lastIndexOf(".") + 1);
-        path = StringUtils.removeEnd(path, "Mixin");
+        path = Strings.CS.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
         return MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path).get();
