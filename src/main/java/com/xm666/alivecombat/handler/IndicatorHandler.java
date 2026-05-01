@@ -17,7 +17,7 @@ public class IndicatorHandler {
         var optionalChargeDuration = getChargeDuration(item, living);
         if (optionalChargeDuration.isEmpty()) return 1.0F;
 
-        var usingTicks = item.getUseDuration(living) - living.getUseItemRemainingTicks();
+        var usingTicks = item.getUseDuration() - living.getUseItemRemainingTicks();
         var chargeDuration = optionalChargeDuration.get();
         return Mth.clamp((usingTicks + adjustTicks) / chargeDuration, 0.0F, 1.0F);
     }
@@ -26,7 +26,7 @@ public class IndicatorHandler {
         return Optional.ofNullable(
                 switch (stack.getItem()) {
                     case BowItem ignored -> 20;
-                    case CrossbowItem ignored -> CrossbowItem.getChargeDuration(stack, living);
+                    case CrossbowItem ignored -> CrossbowItem.getChargeDuration(stack);
                     case TridentItem ignored -> 10;
                     default -> null;
                 });
