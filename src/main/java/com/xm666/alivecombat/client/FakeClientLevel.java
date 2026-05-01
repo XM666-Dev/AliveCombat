@@ -9,9 +9,12 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class FakeClientLevel extends ClientLevel {
     @SuppressWarnings("DataFlowIssue")
@@ -32,6 +35,12 @@ public class FakeClientLevel extends ClientLevel {
     @Override
     public boolean setBlock(@NotNull BlockPos pos, @NotNull BlockState state, int flags, int recursionLeft) {
         return true;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Override
+    public @NotNull List<Entity> getEntities(@Nullable Entity entity, @NotNull AABB boundingBox, @NotNull Predicate<? super Entity> predicate) {
+        return Minecraft.getInstance().level.getEntities(entity, boundingBox, predicate);
     }
 
     @Override

@@ -16,9 +16,9 @@ public class IndicatorHandler {
         var item = living.getUseItem();
         var optionalChargeDuration = getChargeDuration(item, living);
         if (optionalChargeDuration.isEmpty()) return 1.0F;
-        var chargeDuration = optionalChargeDuration.get();
 
         var usingTicks = item.getUseDuration(living) - living.getUseItemRemainingTicks();
+        var chargeDuration = optionalChargeDuration.get();
         return Mth.clamp((usingTicks + adjustTicks) / chargeDuration, 0.0F, 1.0F);
     }
 

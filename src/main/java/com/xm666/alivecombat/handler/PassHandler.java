@@ -62,12 +62,6 @@ public class PassHandler {
         }
     }
 
-    public static HitResult filterHitResult(HitResult hitResult, Vec3 eyePos) {
-        var location = hitResult.getLocation();
-        var direction = Direction.getApproximateNearest(location.x - eyePos.x, location.y - eyePos.y, location.z - eyePos.z);
-        return BlockHitResult.miss(location, direction, BlockPos.containing(location));
-    }
-
     public static boolean isHoldingTools(Entity entity) {
         if (!(entity instanceof LivingEntity living)) return false;
 
@@ -84,11 +78,18 @@ public class PassHandler {
         var collisionContext = CollisionContext.of(entity);
         return new ClipContext(from, to, block, fluid, collisionContext) {
             public @NotNull VoxelShape getBlockShape(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
-                var blockHitResult = new BlockHitResult(to, Direction.getApproximateNearest(to.x - from.x, to.y - from.y, to.z - from.z), pos, false);
+                var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
+                var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
                 var interactionResult = interactsBlock(blockHitResult);
-                return (interactionResult instanceof InteractionResult.Success ? Block.OUTLINE : Block.COLLIDER).get(blockState, level, pos, collisionContext);
+                return interactionResult.consumesAction() ? voxelShape : Block.COLLIDER.get(blockState, level, pos, collisionContext);
             }
         };
+    }
+
+    public static HitResult filterHitResult(HitResult hitResult, Vec3 eyePos) {
+        var location = hitResult.getLocation();
+        var direction = Direction.getApproximateNearest(location.x - eyePos.x, location.y - eyePos.y, location.z - eyePos.z);
+        return BlockHitResult.miss(location, direction, BlockPos.containing(location));
     }
 
     public static boolean interacts(HitResult hitResult) {
