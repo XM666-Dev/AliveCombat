@@ -1,0 +1,26 @@
+Copyright (c) 2026 ImmortalDamned
+
+This project is source-available software.
+
+You are allowed to:
+- View and study the source code
+- Modify the source code for personal use
+- Reference small portions of the code in your own projects
+
+You are NOT allowed to:
+- Redistribute this project or modified versions without permission
+- Create ports to other loaders/platforms without permission
+- Claim this project or its code as your own work
+- Reuse substantial portions of the code without attribution
+
+Attribution Requirements:
+- Direct code copies must clearly credit the original author
+  in the mod description or repository page.
+- Code references or adapted implementations must include
+  attribution either:
+  - in the mod description/repository page, OR
+  - inside the source code comments.
+
+Commercial use requires explicit permission.
+
+All rights reserved unless explicitly stated otherwise.
