@@ -55,7 +55,8 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
         path = Strings.CS.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
-        return MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path).get();
+        var value = MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path);
+        return value == null || value.get();
     }
 
     @Override

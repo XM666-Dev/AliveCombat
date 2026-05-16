@@ -16,6 +16,7 @@ import net.neoforged.neoforge.common.NeoForge;
 public class AutoAttackHandler {
     public static final Timer timer = new Timer(() -> Config.AUTO_ATTACK_DURATION.get().floatValue());
     public static boolean canContinueAttack = true;
+    public static boolean disableSwingHand = false;
 
     @SuppressWarnings("DataFlowIssue")
     public static boolean readyAttack() {
@@ -30,10 +31,7 @@ public class AutoAttackHandler {
                 }
                 yield running;
             }
-            case PRESS -> {
-                var adjustTicks = 0.5F * mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-                yield mc.player.getAttackStrengthScale(adjustTicks) > 0.9F && mc.options.keyAttack.isDown();
-            }
+            case PRESS -> mc.player.getAttackStrengthScale(0.5F) > 0.9F && mc.options.keyAttack.isDown();
         };
     }
 
@@ -51,6 +49,13 @@ public class AutoAttackHandler {
             canContinueAttack = false;
             mc.handleKeybinds();
             canContinueAttack = true;
+        }
+
+        @SubscribeEvent
+        public static void onClickInput(InputEvent.InteractionKeyMappingTriggered event) {
+            if (!disableSwingHand) return;
+
+            event.setSwingHand(false);
         }
     }
 
