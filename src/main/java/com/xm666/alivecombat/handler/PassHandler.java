@@ -2,6 +2,7 @@ package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.client.FakeClientLevel;
+import com.xm666.alivecombat.client.FakeEntity;
 import com.xm666.alivecombat.client.FakeLocalPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -135,7 +136,13 @@ public class PassHandler {
     private static InteractionResult interact(Player player, Entity target, InteractionHand hand) {
         var mc = Minecraft.getInstance();
         var gameMode = mc.gameMode;
-        return gameMode.getPlayerMode() == GameType.SPECTATOR ? InteractionResult.PASS : player.interactOn(target, hand);
+        return gameMode.getPlayerMode() == GameType.SPECTATOR ? InteractionResult.PASS : interactOn(player, target, hand);
+    }
+
+    private static InteractionResult interactOn(Player player, Entity entityToInteractOn, InteractionHand hand) {
+        if (!(entityToInteractOn instanceof FakeEntity fakeEntity)) return player.interactOn(entityToInteractOn, hand);
+
+        return fakeEntity.alivecombat$tryInteract(player, hand);
     }
 
     private static InteractionResult interactsBlock(HitResult hitResult) {

@@ -2,8 +2,11 @@ package com.xm666.alivecombat.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.handler.AutoAttackHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -36,6 +39,17 @@ public class AutoAttackMixin {
             }
 
             return false;
+        }
+
+        @WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startAttack()Z"))
+        private boolean wrapStartAttack(Minecraft instance, Operation<Boolean> original, @Share("autoAttacked") LocalBooleanRef autoAttacked) {
+            if (!autoAttacked.get() || Config.AUTO_ATTACK_MODE.get() != AutoAttackHandler.Mode.CLICK)
+                return original.call(instance);
+
+            AutoAttackHandler.disableSwingHand = true;
+            var result = original.call(instance);
+            AutoAttackHandler.disableSwingHand = false;
+            return result;
         }
 
         @WrapWithCondition(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
