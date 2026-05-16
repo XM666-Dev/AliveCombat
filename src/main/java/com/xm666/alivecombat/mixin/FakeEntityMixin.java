@@ -3,7 +3,6 @@ package com.xm666.alivecombat.mixin;
 import com.xm666.alivecombat.client.FakeEntity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.AbstractFish;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +27,7 @@ public class FakeEntityMixin {
                             return interactionresult;
                         }
 
-                        if (entity.canUseSlot(EquipmentSlot.BODY) && entity.isBodyArmorItem(itemstack) && !entity.isWearingBodyArmor()) {
+                        if (entity.canWearBodyArmor() && entity.isBodyArmorItem(itemstack) && !entity.isWearingBodyArmor()) {
                             return InteractionResult.sidedSuccess(entity.level().isClientSide);
                         }
                     }
