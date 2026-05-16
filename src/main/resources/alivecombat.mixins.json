@@ -13,6 +13,8 @@
     "AutoAttackMixin$MinecraftMixin",
     "AutoAttackMixin$MultiPlayerGameModeMixin",
     "ChargeIndicatorMixin$GuiMixin",
+    "FakeEntityMixin$AbstractFishMixin",
+    "FakeEntityMixin$AbstractHorseMixin",
     "HeldAttackMixin$MinecraftMixin",
     "PassMixin$PassAllyMixin$GameRendererMixin",
     "PassMixin$PassAllyMixin$LivingEntityMixin",
