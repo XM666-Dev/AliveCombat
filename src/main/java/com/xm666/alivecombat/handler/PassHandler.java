@@ -8,8 +8,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,7 +31,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.CommonHooks;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.common.Tags;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -66,18 +64,16 @@ public class PassHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var weapon = living.getWeaponItem();
-        var tags = weapon.getTags();
-        return tags.map(TagKey::location).map(Identifier::toString).anyMatch(s ->
-                s.equals("c:tools/melee_weapon") ||
-                        s.equals("c:tools/ranged_weapon") ||
-                        s.equals("c:tools/shield") ||
-                        s.equals("c:tools/mining_tool"));
+        return weapon.is(Tags.Items.MELEE_WEAPON_TOOLS) ||
+                weapon.is(Tags.Items.RANGED_WEAPON_TOOLS) ||
+                weapon.is(Tags.Items.TOOLS_SHIELD) ||
+                weapon.is(Tags.Items.MINING_TOOL_TOOLS);
     }
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
         var collisionContext = CollisionContext.of(entity);
         return new ClipContext(from, to, block, fluid, collisionContext) {
-            public @NotNull VoxelShape getBlockShape(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+            public VoxelShape getBlockShape(BlockState blockState, BlockGetter level, BlockPos pos) {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
                 var interactionResult = interactsBlock(blockHitResult);

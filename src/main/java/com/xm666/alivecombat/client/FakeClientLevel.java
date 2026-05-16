@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -28,50 +27,50 @@ public class FakeClientLevel extends ClientLevel {
 
     @SuppressWarnings("DataFlowIssue")
     @Override
-    public @NotNull BlockState getBlockState(@NotNull BlockPos pos) {
+    public BlockState getBlockState(BlockPos pos) {
         return Minecraft.getInstance().level.getBlockState(pos);
     }
 
     @Override
-    public boolean setBlock(@NotNull BlockPos pos, @NotNull BlockState state, int flags, int recursionLeft) {
+    public boolean setBlock(BlockPos pos, BlockState state, int flags, int recursionLeft) {
         return true;
     }
 
     @SuppressWarnings("DataFlowIssue")
     @Override
-    public @NotNull List<Entity> getEntities(@Nullable Entity entity, @NotNull AABB boundingBox, @NotNull Predicate<? super Entity> predicate) {
+    public List<Entity> getEntities(@Nullable Entity entity, AABB boundingBox, Predicate<? super Entity> predicate) {
         return Minecraft.getInstance().level.getEntities(entity, boundingBox, predicate);
     }
 
     @Override
-    public void addParticle(@NotNull ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+    public void addParticle(ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
     }
 
     @Override
-    public void addParticle(@NotNull ParticleOptions p_104714_, boolean p_104715_, boolean p_383197_, double p_104716_, double p_104717_, double p_104718_, double p_104719_, double p_104720_, double p_104721_) {
+    public void addParticle(ParticleOptions p_104714_, boolean p_104715_, boolean p_383197_, double p_104716_, double p_104717_, double p_104718_, double p_104719_, double p_104720_, double p_104721_) {
     }
 
     @Override
-    public void addAlwaysVisibleParticle(@NotNull ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+    public void addAlwaysVisibleParticle(ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
     }
 
     @Override
-    public void addAlwaysVisibleParticle(@NotNull ParticleOptions particleData, boolean ignoreRange, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+    public void addAlwaysVisibleParticle(ParticleOptions particleData, boolean ignoreRange, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
     }
 
     @Override
-    public void playSeededSound(@Nullable Entity p_393665_, double p_263372_, double p_263404_, double p_263365_, @NotNull Holder<@NotNull SoundEvent> p_263335_, @NotNull SoundSource p_263417_, float p_263416_, float p_263349_, long p_263408_) {
+    public void playSeededSound(@Nullable Entity p_393665_, double p_263372_, double p_263404_, double p_263365_, Holder<SoundEvent> p_263335_, SoundSource p_263417_, float p_263416_, float p_263349_, long p_263408_) {
     }
 
     @Override
-    public void playSeededSound(@Nullable Entity p_263536_, @NotNull Entity p_394209_, @NotNull Holder<@NotNull SoundEvent> p_263518_, @NotNull SoundSource p_263487_, float p_263538_, float p_263524_, long p_263509_) {
+    public void playSeededSound(@Nullable Entity p_263536_, Entity p_394209_, Holder<SoundEvent> p_263518_, SoundSource p_263487_, float p_263538_, float p_263524_, long p_263509_) {
     }
 
     @Override
-    public void playLocalSound(@NotNull Entity entity, @NotNull SoundEvent sound, @NotNull SoundSource category, float volume, float pitch) {
+    public void playLocalSound(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
     }
 
     @Override
-    public void playLocalSound(double x, double y, double z, @NotNull SoundEvent sound, @NotNull SoundSource category, float volume, float pitch, boolean distanceDelay) {
+    public void playLocalSound(double x, double y, double z, SoundEvent sound, SoundSource category, float volume, float pitch, boolean distanceDelay) {
     }
 }
