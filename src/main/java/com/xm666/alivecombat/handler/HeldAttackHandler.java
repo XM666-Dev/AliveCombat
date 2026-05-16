@@ -1,9 +1,8 @@
 package com.xm666.alivecombat.handler;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.neoforge.common.Tags;
 
 public class HeldAttackHandler {
     public static boolean heldAttack = false;
@@ -12,7 +11,6 @@ public class HeldAttackHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var item = living.getUseItem();
-        var tags = item.getTags();
-        return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/shield"));
+        return item.is(Tags.Items.TOOLS_SHIELD);
     }
 }

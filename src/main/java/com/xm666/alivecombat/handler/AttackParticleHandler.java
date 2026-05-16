@@ -8,7 +8,6 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -23,6 +22,7 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
 public class AttackParticleHandler {
@@ -100,12 +100,10 @@ public class AttackParticleHandler {
         @SubscribeEvent
         public static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (!player.level().isClientSide || canSweep(event.getTarget())) return;
+            if (!player.level().isClientSide() || canSweep(event.getTarget())) return;
 
             var weapon = player.getWeaponItem();
-            var tags = weapon.getTags();
-            var melee = tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s -> s.equals("c:tools/melee_weapon"));
-            if (!melee) return;
+            if (!weapon.is(Tags.Items.MELEE_WEAPON_TOOLS)) return;
 
             var attackStrengthScale = player.getAttackStrengthScale(0.5F);
             var full = attackStrengthScale > 0.9F;
