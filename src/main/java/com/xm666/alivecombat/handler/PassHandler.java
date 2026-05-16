@@ -8,8 +8,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -33,8 +31,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.TriState;
-import org.jetbrains.annotations.NotNull;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -67,15 +65,13 @@ public class PassHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var weapon = living.getMainHandItem();
-        var tags = weapon.getTags();
-        return tags.map(TagKey::location).map(ResourceLocation::toString).anyMatch(s ->
-                s.equals("c:tools"));
+        return weapon.is(Tags.Items.TOOLS);
     }
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
         var collisionContext = CollisionContext.of(entity);
         return new ClipContext(from, to, block, fluid, collisionContext) {
-            public @NotNull VoxelShape getBlockShape(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+            public VoxelShape getBlockShape(BlockState blockState, BlockGetter level, BlockPos pos) {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
                 var interactionResult = interactsBlock(blockHitResult);

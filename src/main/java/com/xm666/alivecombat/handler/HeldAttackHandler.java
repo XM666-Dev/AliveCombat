@@ -11,6 +11,6 @@ public class HeldAttackHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var item = living.getUseItem();
-        return item.is(Tags.Items.TOOLS_SHIELD);
+        return item.is(Tags.Items.TOOLS_SHIELDS);
     }
 }
