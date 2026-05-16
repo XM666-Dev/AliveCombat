@@ -18,35 +18,35 @@ public class FakeEntityMixin {
     private static class AbstractHorseMixin implements FakeEntity {
         @Override
         public InteractionResult alivecombat$tryInteract(Player player, InteractionHand hand) {
-            var horse = (AbstractHorse) (Object) this;
-            if (!horse.isVehicle() && !horse.isBaby()) {
-                if (!horse.isTamed() || !player.isSecondaryUseActive()) {
+            var entity = (AbstractHorse) (Object) this;
+            if (!entity.isVehicle() && !entity.isBaby()) {
+                if (!entity.isTamed() || !player.isSecondaryUseActive()) {
                     var itemstack = player.getItemInHand(hand);
                     if (!itemstack.isEmpty()) {
-                        var interactionresult = itemstack.interactLivingEntity(player, horse, hand);
+                        var interactionresult = itemstack.interactLivingEntity(player, entity, hand);
                         if (interactionresult.consumesAction()) {
                             return interactionresult;
                         }
 
-                        if (horse.canUseSlot(EquipmentSlot.BODY) && horse.isBodyArmorItem(itemstack) && !horse.isWearingBodyArmor()) {
-                            return InteractionResult.sidedSuccess(horse.level().isClientSide);
+                        if (entity.canUseSlot(EquipmentSlot.BODY) && entity.isBodyArmorItem(itemstack) && !entity.isWearingBodyArmor()) {
+                            return InteractionResult.sidedSuccess(entity.level().isClientSide);
                         }
                     }
                 }
-                return InteractionResult.sidedSuccess(horse.level().isClientSide);
+                return InteractionResult.sidedSuccess(entity.level().isClientSide);
             } else {
                 var itemstack = player.getItemInHand(hand);
-                if (horse.isFood(itemstack)) {
-                    var i = horse.getAge();
-                    if (!horse.level().isClientSide && i == 0 && horse.canFallInLove()) {
+                if (entity.isFood(itemstack)) {
+                    var i = entity.getAge();
+                    if (!entity.level().isClientSide && i == 0 && entity.canFallInLove()) {
                         return InteractionResult.SUCCESS;
                     }
 
-                    if (horse.isBaby()) {
-                        return InteractionResult.sidedSuccess(horse.level().isClientSide);
+                    if (entity.isBaby()) {
+                        return InteractionResult.sidedSuccess(entity.level().isClientSide);
                     }
 
-                    if (horse.level().isClientSide) {
+                    if (entity.level().isClientSide) {
                         return InteractionResult.CONSUME;
                     }
                 }
