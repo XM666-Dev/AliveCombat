@@ -1,4 +1,4 @@
-package com.xm666.alivecombat.mixin;
+package com.xm666.alivecombat.mixin.alivecombat;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;

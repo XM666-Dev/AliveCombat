@@ -3,6 +3,7 @@ package com.xm666.alivecombat.handler;
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.client.FakeClientLevel;
 import com.xm666.alivecombat.client.FakeEntity;
+import com.xm666.alivecombat.client.FakeItem;
 import com.xm666.alivecombat.client.FakeLocalPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -11,14 +12,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -235,7 +239,14 @@ public class PassHandler {
         var cancelResult = CommonHooks.onItemRightClick(player, hand);
         if (cancelResult != null) return cancelResult;
 
-        var interactionResultHolder = item.use(fakeClientLevel, player, hand);
+        var interactionResultHolder = use(item, fakeClientLevel, player, hand);
         return interactionResultHolder.getResult();
+    }
+
+    private static InteractionResultHolder<ItemStack> use(ItemStack itemStack, Level level, Player player, InteractionHand usedHand) {
+        var item = itemStack.getItem();
+        if (!(item instanceof FakeItem fakeItem)) return itemStack.use(level, player, usedHand);
+
+        return fakeItem.alivecombat$tryUse(level, player, usedHand);
     }
 }

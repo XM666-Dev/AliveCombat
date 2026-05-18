@@ -1,4 +1,4 @@
-package com.xm666.alivecombat.mixin;
+package com.xm666.alivecombat.mixin.alivecombat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
