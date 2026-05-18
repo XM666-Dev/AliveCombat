@@ -1,4 +1,4 @@
-package com.xm666.alivecombat.mixin;
+package com.xm666.alivecombat.mixin.alivecombat;
 
 import com.xm666.alivecombat.client.FakeEntity;
 import net.minecraft.server.level.ServerPlayer;
