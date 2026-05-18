@@ -3,12 +3,14 @@ package com.xm666.alivecombat.handler;
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.MixinConfig;
+import com.xm666.alivecombat.compat.ShoulderSurfingHandler;
 import com.xm666.alivecombat.timer.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
@@ -47,6 +49,10 @@ public class AutoAttackHandler {
         public static void onRenderFramePost(RenderFrameEvent.Post event) {
             var mc = Minecraft.getInstance();
             if (mc.player == null) return;
+
+            if (ModList.get().isLoaded("shouldersurfing")) {
+                ShoulderSurfingHandler.tick();
+            }
 
             canContinueAttack = false;
             mc.handleKeybinds();
