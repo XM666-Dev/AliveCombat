@@ -1,44 +1,25 @@
 package com.xm666.alivecombat;
 
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.moddiscovery.ModInfo;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.mclanguageprovider.MinecraftModContainer;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforgespi.language.IConfigurable;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class MixinConfigPlugin implements IMixinConfigPlugin {
+    private String mixinPackage;
+
     @Override
     public void onLoad(String mixinPackage) {
-        new ModContainer(new ModInfo(null, new IConfigurable() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public <T> Optional<T> getConfigElement(String... key) {
-                if (key[0].equals("modId")) {
-                    return (Optional<T>) Optional.of(AliveCombat.MODID);
-                }
-                return Optional.empty();
-            }
-
-            @Override
-            public List<? extends IConfigurable> getConfigList(String... key) {
-                return List.of();
-            }
-        })) {
-            @Override
-            public @Nullable IEventBus getEventBus() {
-                return null;
-            }
-        }.registerConfig(ModConfig.Type.STARTUP, MixinConfig.SPEC);
+        var container = new MinecraftModContainer(FMLLoader.getLoadingModList().getModFileById(AliveCombat.MODID).getMods().getFirst());
+        container.registerConfig(ModConfig.Type.STARTUP, MixinConfig.SPEC);
+        this.mixinPackage = mixinPackage;
     }
 
     @Override
@@ -48,12 +29,21 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        var path = mixinClassName.substring(0, mixinClassName.lastIndexOf("$"));
-        path = path.substring(path.lastIndexOf("$") + 1);
-        path = path.substring(path.lastIndexOf(".") + 1);
+        var toIndex = mixinClassName.lastIndexOf('$');
+        var fromIndex = Math.max(
+                mixinClassName.lastIndexOf('.', toIndex - 1),
+                mixinClassName.lastIndexOf('$', toIndex - 1)
+        ) + 1;
+        var path = mixinClassName.substring(fromIndex, toIndex);
         path = StringUtils.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
+
+        var packageFromIndex = mixinPackage.length() + 1;
+        var packageToIndex = mixinClassName.indexOf('.', packageFromIndex);
+        var packageName = mixinClassName.substring(packageFromIndex, packageToIndex);
+        if (FMLLoader.getLoadingModList().getModFileById(packageName) == null) return false;
+
         var value = MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path);
         return value == null || value.get();
     }
