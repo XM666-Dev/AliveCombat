@@ -1,7 +1,7 @@
 package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.AliveCombat;
-import com.xm666.alivecombat.Config;
+import com.xm666.alivecombat.MixinConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -10,46 +10,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
 public class AttackParticleHandler {
     private static final RandomSource random = RandomSource.create();
-
-    @SuppressWarnings("DataFlowIssue")
-    private static boolean canSweep(Entity target) {
-        var mc = Minecraft.getInstance();
-        var player = mc.player;
-        var attackStrengthScale = player.getAttackStrengthScale(0.5F);
-        var full = attackStrengthScale > 0.9F;
-        var sprint = player.isSprinting() && full;
-
-        var crit = full && player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() && !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger() && target instanceof LivingEntity && !player.isSprinting();
-        var critEvent = CommonHooks.fireCriticalHit(player, target, crit, crit ? 1.5F : 1.0F);
-
-        var sweep = false;
-        var delta = player.walkDist - player.walkDistO;
-        var critBlocksSweep = critEvent.isCriticalHit() && critEvent.disableSweep();
-        if (full && !critBlocksSweep && !sprint && player.onGround() && delta < player.getSpeed()) {
-            var item = player.getItemInHand(InteractionHand.MAIN_HAND);
-            sweep = item.canPerformAction(ItemAbilities.SWORD_SWEEP);
-        }
-
-        var sweepEvent = CommonHooks.fireSweepAttack(player, target, sweep);
-        return sweepEvent.isSweeping();
-    }
 
     @SuppressWarnings("DataFlowIssue")
     private static void sweepAttack() {
@@ -100,7 +71,7 @@ public class AttackParticleHandler {
         @SubscribeEvent
         public static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (!player.level().isClientSide() || canSweep(event.getTarget())) return;
+            if (!player.isLocalPlayer()) return;
 
             var weapon = player.getWeaponItem();
             if (!weapon.is(Tags.Items.MELEE_WEAPON_TOOLS)) return;
@@ -117,20 +88,9 @@ public class AttackParticleHandler {
     public static class AttackParticleConfig {
         @SubscribeEvent
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
-            toggle();
-        }
+            if (!MixinConfig.ATTACK_PARTICLE_ENABLED.get()) return;
 
-        @SubscribeEvent
-        public static void onModConfigReloading(ModConfigEvent.Reloading event) {
-            toggle();
-        }
-
-        private static void toggle() {
-            if (Config.ATTACK_PARTICLE_ENABLED.get()) {
-                NeoForge.EVENT_BUS.register(AttackParticleClient.class);
-            } else {
-                NeoForge.EVENT_BUS.unregister(AttackParticleClient.class);
-            }
+            NeoForge.EVENT_BUS.register(AttackParticleClient.class);
         }
     }
 }

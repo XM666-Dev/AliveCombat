@@ -24,8 +24,5 @@ public class Config {
     public static final ModConfigSpec.BooleanValue PASS_ALLY_INTERACTION_BLOCKED = BUILDER
             .define("passAllyInteractionBlocked", true);
 
-    public static final ModConfigSpec.BooleanValue ATTACK_PARTICLE_ENABLED = BUILDER
-            .define("attackParticleEnabled", true);
-
     static final ModConfigSpec SPEC = BUILDER.build();
 }
