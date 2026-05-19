@@ -6,17 +6,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
@@ -91,7 +95,7 @@ public class AttackParticleHandler {
         @SubscribeEvent
         public static void onAttackEntity(AttackEntityEvent event) {
             var player = event.getEntity();
-            if (!player.level().isClientSide() || canSweep(event.getTarget())) return;
+            if (!player.isLocalPlayer()) return;
 
             var weapon = player.getWeaponItem();
             if (!weapon.is(Tags.Items.MELEE_WEAPON_TOOLS)) return;
@@ -108,20 +112,9 @@ public class AttackParticleHandler {
     public static class AttackParticleConfig {
         @SubscribeEvent
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
-            toggle();
-        }
+            if (!MixinConfig.ATTACK_PARTICLE_ENABLED.get()) return;
 
-        @SubscribeEvent
-        public static void onModConfigReloading(ModConfigEvent.Reloading event) {
-            toggle();
-        }
-
-        private static void toggle() {
-            if (Config.ATTACK_PARTICLE_ENABLED.get()) {
-                NeoForge.EVENT_BUS.register(AttackParticleClient.class);
-            } else {
-                NeoForge.EVENT_BUS.unregister(AttackParticleClient.class);
-            }
+            NeoForge.EVENT_BUS.register(AttackParticleClient.class);
         }
     }
 }
