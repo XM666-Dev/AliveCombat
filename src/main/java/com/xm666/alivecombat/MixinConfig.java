@@ -26,14 +26,14 @@ public class MixinConfig {
     public static final ModConfigSpec.BooleanValue PASS_ALLY_ENABLED = BUILDER
             .define("passAllyEnabled", true);
 
+    public static final ModConfigSpec.BooleanValue ATTACK_PARTICLE_ENABLED = BUILDER
+            .define("attackParticleEnabled", true);
+
     public static final ModConfigSpec.BooleanValue SMOOTH_INDICATOR_ENABLED = BUILDER
             .define("smoothIndicatorEnabled", true);
 
     public static final ModConfigSpec.BooleanValue CHARGE_INDICATOR_ENABLED = BUILDER
             .define("chargeIndicatorEnabled", true);
-
-    public static final ModConfigSpec.BooleanValue ATTACK_PARTICLE_ENABLED = BUILDER
-            .define("attackParticleEnabled", true);
 
     static final ModConfigSpec SPEC = BUILDER.build();
 }
