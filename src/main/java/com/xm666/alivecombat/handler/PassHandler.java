@@ -80,7 +80,14 @@ public class PassHandler {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
                 var interactionResult = interactsBlock(blockHitResult);
-                return interactionResult.consumesAction() ? voxelShape : Block.COLLIDER.get(blockState, level, pos, collisionContext);
+                if (interactionResult.consumesAction()) return voxelShape;
+
+                if (entity instanceof LivingEntity living) {
+                    var item = living.getMainHandItem();
+                    if (item.isCorrectToolForDrops(blockState)) return voxelShape;
+                }
+
+                return Block.COLLIDER.get(blockState, level, pos, collisionContext);
             }
         };
     }
