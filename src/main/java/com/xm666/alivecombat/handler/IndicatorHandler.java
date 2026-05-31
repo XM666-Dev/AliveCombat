@@ -45,12 +45,13 @@ public class IndicatorHandler {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
         var matrix = guiGraphics.pose().last().pose();
-        var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(matrix, x, y, 0).setUv(minU, minV);
-        buffer.addVertex(matrix, x, y + vHeight, 0).setUv(minU, maxV);
-        buffer.addVertex(matrix, x + uWidth, y + vHeight, 0).setUv(maxU, maxV);
-        buffer.addVertex(matrix, x + uWidth, y, 0).setUv(maxU, minV);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        var buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.vertex(matrix, x, y, 0).uv(minU, minV).endVertex();
+        buffer.vertex(matrix, x, y + vHeight, 0).uv(minU, maxV).endVertex();
+        buffer.vertex(matrix, x + uWidth, y + vHeight, 0).uv(maxU, maxV).endVertex();
+        buffer.vertex(matrix, x + uWidth, y, 0).uv(maxU, minV).endVertex();
+        BufferUploader.drawWithShader(buffer.end());
     }
 
     public static float getChargeScale(LivingEntity living, float adjustTicks) {
