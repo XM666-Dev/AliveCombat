@@ -2,6 +2,7 @@ package com.xm666.alivecombat.mixin.alivecombat;
 
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -48,19 +49,19 @@ public class PassMixin {
     private static class PassCollisionlessExtraMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapOperation(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
-            private HitResult wrapPick(GameRenderer instance, Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
+            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
+            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
                 if (PassHandler.passEnabled) {
                     if (Config.PASS_COLLISIONLESS_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity))
-                        return original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                        return original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                     if (Config.PASS_COLLISIONLESS_INTERACTION_BLOCKED.get()) {
-                        var passHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                        var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                         if (PassHandler.interacts(passHitResult)) return passHitResult;
                     }
                 }
 
                 PassHandler.passCollisionlessExtra = false;
-                var originalHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                var originalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                 PassHandler.passCollisionlessExtra = true;
                 return originalHitResult;
             }
@@ -78,13 +79,13 @@ public class PassMixin {
     private static class PassDeadMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapOperation(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
-            private HitResult wrapPick(GameRenderer instance, Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
-                var passHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
+            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
+                var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                 if (!PassHandler.passEnabled || passHitResult.getType() != HitResult.Type.BLOCK) return passHitResult;
 
                 PassHandler.passDead = false;
-                var orignalHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                var orignalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                 PassHandler.passDead = true;
                 if (orignalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
 
@@ -107,19 +108,19 @@ public class PassMixin {
     private static class PassAllyMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapOperation(method = "pick(F)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;"))
-            private HitResult wrapPick(GameRenderer instance, Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
+            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
+            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
                 if (PassHandler.passEnabled) {
                     if (Config.PASS_ALLY_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity))
-                        return original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                        return original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                     if (Config.PASS_ALLY_INTERACTION_BLOCKED.get()) {
-                        var passHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                        var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                         if (PassHandler.interacts(passHitResult)) return passHitResult;
                     }
                 }
 
                 PassHandler.passAlly = false;
-                var originalHitResult = original.call(instance, entity, blockInteractionRange, entityInteractionRange, partialTick);
+                var originalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
                 PassHandler.passAlly = true;
                 return originalHitResult;
             }

@@ -29,6 +29,15 @@
     "alivecombat.SmoothIndicatorMixin$GuiMixin",
     "alivecombat.SpamAttackMixin$LocalPlayerMixin",
     "alivecombat.SpamAttackMixin$MinecraftMixin",
-    "alivecombat.SpamAttackMixin$MultiPlayerGameModeMixin"
-  ]
+    "alivecombat.SpamAttackMixin$MultiPlayerGameModeMixin",
+    "shouldersurfing.PassMixin$PassAllyMixin$ObjectPickerMixin",
+    "shouldersurfing.PassMixin$PassCollisionlessExtraMixin$ObjectPickerMixin",
+    "shouldersurfing.PassMixin$PassCollisionlessExtraMixin$PickContextMixin",
+    "shouldersurfing.PassMixin$PassCollisionlessMixin$ObjectPickerMixin",
+    "shouldersurfing.PassMixin$PassCollisionlessMixin$PickContextMixin",
+    "shouldersurfing.PassMixin$PassDeadMixin$ObjectPickerMixin"
+  ],
+  "mixinextras": {
+    "minVersion": "0.5.3"
+  }
 }
