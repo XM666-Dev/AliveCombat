@@ -3,11 +3,12 @@ package com.xm666.alivecombat.mixin.alivecombat;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.xm666.alivecombat.handler.IndicatorHandler;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,9 +24,9 @@ public class SmoothIndicatorMixin {
             return adjustTicks + deltaTracker.getGameTimeDeltaPartialTick(true);
         }
 
-        @WrapOperation(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V"))
-        private void wrapBlitSprite(GuiGraphics instance, ResourceLocation sprite, int textureWidth, int textureHeight, int uPosition, int vPosition, int x, int y, int uWidth, int vHeight, Operation<Void> original, @Local float scale) {
-            IndicatorHandler.blitSprite(instance, sprite, textureWidth, textureHeight, uPosition, vPosition, x, y, scale * 17.0F, vHeight);
+        @WrapOperation(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIIIII)V"))
+        private void wrapBlitSprite(GuiGraphics instance, RenderPipeline pipeline, Identifier sprite, int textureWidth, int textureHeight, int u, int v, int x, int y, int width, int height, Operation<Void> original, @Local float scale) {
+            IndicatorHandler.blitSprite(instance, pipeline, sprite, textureWidth, textureHeight, u, v, x, y, scale * 17.0F, height);
         }
     }
 }
