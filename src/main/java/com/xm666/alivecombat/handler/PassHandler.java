@@ -70,7 +70,6 @@ public class PassHandler {
         var weapon = living.getWeaponItem();
         return weapon.is(Tags.Items.MELEE_WEAPON_TOOLS) ||
                 weapon.is(Tags.Items.RANGED_WEAPON_TOOLS) ||
-                weapon.is(Tags.Items.TOOLS_SHIELD) ||
                 weapon.is(Tags.Items.MINING_TOOL_TOOLS);
     }
 
