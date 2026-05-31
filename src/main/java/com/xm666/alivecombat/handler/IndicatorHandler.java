@@ -37,7 +37,7 @@ public class IndicatorHandler {
         if (width == 0 || height == 0) return;
 
         var textureAtlasSprite = guiSprites.getSprite(sprite);
-        var atlas = textureAtlasSprite.atlasLocation();
+        var atlasLocation = textureAtlasSprite.atlasLocation();
         var minU = textureAtlasSprite.getU(u / textureWidth);
         var maxU = textureAtlasSprite.getU((u + width) / textureWidth);
         var minV = textureAtlasSprite.getV(v / textureHeight);
@@ -45,7 +45,7 @@ public class IndicatorHandler {
 
         var mc = Minecraft.getInstance();
         var textureManager = mc.getTextureManager();
-        var texture = textureManager.getTexture(atlas);
+        var texture = textureManager.getTexture(atlasLocation);
         guiGraphics.guiRenderState.submitGuiElement(new BlitRenderState(pipeline, TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()), new Matrix3x2f(guiGraphics.pose()), x, y, x + width, y + height, minU, maxU, minV, maxV, -1, guiGraphics.peekScissorStack()));
     }
 
