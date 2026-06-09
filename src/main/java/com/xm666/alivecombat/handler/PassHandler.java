@@ -1,19 +1,14 @@
 package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.AliveCombat;
-import com.xm666.alivecombat.client.FakeClientLevel;
-import com.xm666.alivecombat.client.FakeEntity;
-import com.xm666.alivecombat.client.FakeItem;
-import com.xm666.alivecombat.client.FakeLocalPlayer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -21,8 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -33,11 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.util.TriState;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -46,14 +38,6 @@ public class PassHandler {
     public static boolean passCollisionlessExtra = true;
     public static boolean passDead = true;
     public static boolean passAlly = true;
-    private static FakeClientLevel fakeClientLevel;
-    private static FakeLocalPlayer fakeLocalPlayer;
-
-    @SubscribeEvent
-    public static void onClientJoin(ClientPlayerNetworkEvent.LoggingIn event) {
-        fakeClientLevel = new FakeClientLevel();
-        fakeLocalPlayer = new FakeLocalPlayer(fakeClientLevel);
-    }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -75,21 +59,29 @@ public class PassHandler {
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
         var collisionContext = CollisionContext.of(entity);
+        var stack = entity instanceof LivingEntity living ? living.getMainHandItem() : null;
         return new ClipContext(from, to, block, fluid, collisionContext) {
             public VoxelShape getBlockShape(BlockState blockState, BlockGetter level, BlockPos pos) {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
-                var interactionResult = interactsBlock(blockHitResult);
-                if (interactionResult.consumesAction()) return voxelShape;
+                if (interactsBlock(blockHitResult)) return voxelShape;
 
-                if (entity instanceof LivingEntity living) {
-                    var item = living.getMainHandItem();
-                    if (item.isCorrectToolForDrops(blockState)) return voxelShape;
-                }
+                if (stack != null && stack.isCorrectToolForDrops(blockState) && isNotAxeForGrass(stack, blockState))
+                    return voxelShape;
 
                 return Block.COLLIDER.get(blockState, level, pos, collisionContext);
             }
         };
+    }
+
+    private static boolean isNotAxeForGrass(ItemStack stack, BlockState blockState) {
+        var tool = stack.get(DataComponents.TOOL);
+        if (tool == null) return true;
+
+        var blocks = BuiltInRegistries.BLOCK.getOrCreateTag(BlockTags.MINEABLE_WITH_AXE);
+        return tool.rules().stream().allMatch(rule -> rule.blocks() != blocks)
+                || !blockState.is(BlockTags.MINEABLE_WITH_AXE)
+                || !blockState.is(Blocks.SHORT_GRASS) && !blockState.is(Blocks.TALL_GRASS);
     }
 
     public static HitResult filterHitResult(HitResult hitResult, Vec3 pos) {
@@ -99,161 +91,103 @@ public class PassHandler {
     }
 
     public static boolean interacts(HitResult hitResult) {
-        var entityInteractionResult = interactsEntity(hitResult);
-        if (entityInteractionResult.consumesAction()) return true;
-        if (entityInteractionResult == InteractionResult.FAIL) return false;
-
-        var blockInteractionResult = interactsBlock(hitResult);
-        if (blockInteractionResult.consumesAction()) return true;
-        if (blockInteractionResult == InteractionResult.FAIL) return false;
-
-        return usesItem().consumesAction();
+        return interactsEntity(hitResult) || interactsBlock(hitResult) || interactsItem();
     }
 
-    private static InteractionResult interactsEntity(HitResult hitResult) {
-        if (!(hitResult instanceof EntityHitResult entityHitResult)) return InteractionResult.PASS;
+    private static boolean interactsEntity(HitResult hitResult) {
+        if (!(hitResult instanceof EntityHitResult entityHitResult)) return false;
 
         var target = entityHitResult.getEntity();
-        if (!fakeClientLevel.getWorldBorder().isWithinBounds(target.blockPosition())) return InteractionResult.FAIL;
-
-        for (var hand : InteractionHand.values()) {
-            var interactionResult = interactAt(fakeLocalPlayer, target, entityHitResult, hand);
-            if (!interactionResult.consumesAction()) {
-                interactionResult = interact(fakeLocalPlayer, target, hand);
-            }
-            if (interactionResult.consumesAction()) return interactionResult;
-        }
-
-        return InteractionResult.PASS;
-    }
-
-    @SuppressWarnings({"DataFlowIssue", "SameParameterValue"})
-    private static InteractionResult interactAt(Player player, Entity target, EntityHitResult ray, InteractionHand hand) {
-        var mc = Minecraft.getInstance();
-        var gameMode = mc.gameMode;
-        var vector = ray.getLocation().subtract(target.getX(), target.getY(), target.getZ());
-        if (gameMode.getPlayerMode() == GameType.SPECTATOR) return InteractionResult.PASS;
-
-        var cancelResult = CommonHooks.onInteractEntityAt(player, target, ray, hand);
-        if (cancelResult != null) return cancelResult;
-
-        return gameMode.getPlayerMode() == GameType.SPECTATOR ? InteractionResult.PASS : target.interactAt(player, vector, hand);
-    }
-
-    @SuppressWarnings({"DataFlowIssue", "SameParameterValue"})
-    private static InteractionResult interact(Player player, Entity target, InteractionHand hand) {
-        var mc = Minecraft.getInstance();
-        var gameMode = mc.gameMode;
-        return gameMode.getPlayerMode() == GameType.SPECTATOR ? InteractionResult.PASS : interactOn(player, target, hand);
-    }
-
-    private static InteractionResult interactOn(Player player, Entity entityToInteractOn, InteractionHand hand) {
-        if (!(entityToInteractOn instanceof FakeEntity fakeEntity)) return player.interactOn(entityToInteractOn, hand);
-
-        return fakeEntity.alivecombat$tryInteract(player, hand);
-    }
-
-    private static InteractionResult interactsBlock(HitResult hitResult) {
-        if (!(hitResult instanceof BlockHitResult blockHitResult)) return InteractionResult.PASS;
-
-        for (var hand : InteractionHand.values()) {
-            var interactionResult = useItemOn(fakeLocalPlayer, hand, blockHitResult);
-            if (interactionResult.consumesAction() || interactionResult == InteractionResult.FAIL)
-                return interactionResult;
-        }
-
-        return InteractionResult.PASS;
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private static InteractionResult useItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult result) {
-        if (!fakeClientLevel.getWorldBorder().isWithinBounds(result.getBlockPos())) return InteractionResult.FAIL;
-
-        return performUseItemOn(player, hand, result);
+        var targetClass = target.getClass();
+        return declaresMethod(targetClass, "interactAt", Player.class, Vec3.class, InteractionHand.class)
+                || declaresMethod(targetClass, "interact", Player.class, InteractionHand.class)
+                || declaresMethod(targetClass, "mobInteract", Player.class, InteractionHand.class)
+                || interactsLivingEntity(target);
     }
 
     @SuppressWarnings("DataFlowIssue")
-    private static InteractionResult performUseItemOn(LocalPlayer player, InteractionHand hand, BlockHitResult blockHitResult) {
+    private static boolean interactsLivingEntity(Entity target) {
+        if (!(target instanceof LivingEntity)) return false;
+
         var mc = Minecraft.getInstance();
-        var gameMode = mc.gameMode;
-        var blockPos = blockHitResult.getBlockPos();
-        var item = player.getItemInHand(hand);
-        var event = CommonHooks.onRightClickBlock(player, hand, blockPos, blockHitResult);
-        if (event.isCanceled()) {
-            return event.getCancellationResult();
-        } else if (gameMode.getPlayerMode() == GameType.SPECTATOR) {
-            return InteractionResult.SUCCESS;
-        } else {
-            var useOnContext = new UseOnContext(player, hand, blockHitResult);
-            if (event.getUseItem() != TriState.FALSE) {
-                var result = item.onItemUseFirst(useOnContext);
-                if (result != InteractionResult.PASS) {
-                    return result;
-                }
-            }
-
-            var direct = !player.getMainHandItem().doesSneakBypassUse(player.level(), blockPos, player) || !player.getOffhandItem().doesSneakBypassUse(player.level(), blockPos, player);
-            var active = player.isSecondaryUseActive() && direct;
-            if (event.getUseBlock().isTrue() || event.getUseBlock().isDefault() && !active) {
-                var blockState = fakeClientLevel.getBlockState(blockPos);
-                if (!mc.getConnection().isFeatureEnabled(blockState.getBlock().requiredFeatures())) {
-                    return InteractionResult.FAIL;
-                }
-
-                var itemInteractionResult = blockState.useItemOn(player.getItemInHand(hand), fakeClientLevel, player, hand, blockHitResult);
-                if (itemInteractionResult.consumesAction()) {
-                    return itemInteractionResult.result();
-                }
-
-                if (itemInteractionResult == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && hand == InteractionHand.MAIN_HAND) {
-                    var interactionResult = blockState.useWithoutItem(fakeClientLevel, player, blockHitResult);
-                    if (interactionResult.consumesAction()) {
-                        return interactionResult;
-                    }
-                }
-            }
-
-            if (event.getUseItem().isFalse()) {
-                return InteractionResult.PASS;
-            } else if (event.getUseItem().isTrue() || !item.isEmpty() && !player.getCooldowns().isOnCooldown(item.getItem())) {
-                return item.useOn(useOnContext);
-            }
-            return InteractionResult.PASS;
-        }
-    }
-
-    private static InteractionResult usesItem() {
+        var player = mc.player;
         for (var hand : InteractionHand.values()) {
-            var item = fakeLocalPlayer.getItemInHand(hand);
-            if (item.isEmpty()) continue;
-
-            var interactionResult = useItem(fakeLocalPlayer, hand);
-            if (interactionResult.consumesAction()) return interactionResult;
+            var stack = player.getItemInHand(hand);
+            var item = stack.getItem();
+            var itemClass = item.getClass();
+            if (declaresMethod(itemClass, "interactLivingEntity", ItemStack.class, Player.class, LivingEntity.class, InteractionHand.class))
+                return true;
         }
 
-        return InteractionResult.PASS;
+        return false;
     }
 
-    @SuppressWarnings({"DataFlowIssue", "SameParameterValue"})
-    private static InteractionResult useItem(Player player, InteractionHand hand) {
+    @SuppressWarnings("DataFlowIssue")
+    private static boolean interactsBlock(HitResult hitResult) {
+        if (!(hitResult instanceof BlockHitResult blockHitResult)) return false;
+
         var mc = Minecraft.getInstance();
-        var gameMode = mc.gameMode;
-        if (gameMode.getPlayerMode() == GameType.SPECTATOR) return InteractionResult.PASS;
-
-        var item = player.getItemInHand(hand);
-        if (player.getCooldowns().isOnCooldown(item.getItem())) return InteractionResult.PASS;
-
-        var cancelResult = CommonHooks.onItemRightClick(player, hand);
-        if (cancelResult != null) return cancelResult;
-
-        var interactionResultHolder = use(item, fakeClientLevel, player, hand);
-        return interactionResultHolder.getResult();
+        var level = mc.level;
+        var blockState = level.getBlockState(blockHitResult.getBlockPos());
+        var block = blockState.getBlock();
+        var blockClass = block.getClass();
+        return usesItemFirst()
+                || declaresMethod(blockClass, "useItemOn", ItemStack.class, BlockState.class, Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class)
+                || declaresMethod(blockClass, "useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
+        //|| usesItem();
     }
 
-    private static InteractionResultHolder<ItemStack> use(ItemStack itemStack, Level level, Player player, InteractionHand usedHand) {
-        var item = itemStack.getItem();
-        if (!(item instanceof FakeItem fakeItem)) return itemStack.use(level, player, usedHand);
+    @SuppressWarnings("DataFlowIssue")
+    private static boolean usesItemFirst() {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        for (var hand : InteractionHand.values()) {
+            var stack = player.getItemInHand(hand);
+            var item = stack.getItem();
+            var itemClass = item.getClass();
+            if (declaresMethod(itemClass, "onItemUseFirst", ItemStack.class, UseOnContext.class))
+                return true;
+        }
 
-        return fakeItem.alivecombat$tryUse(level, player, usedHand);
+        return false;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    private static boolean usesItem() {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        for (var hand : InteractionHand.values()) {
+            var stack = player.getItemInHand(hand);
+            var item = stack.getItem();
+            var itemClass = item.getClass();
+            if (declaresMethod(itemClass, "useOn", UseOnContext.class))
+                return true;
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    private static boolean interactsItem() {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        for (var hand : InteractionHand.values()) {
+            var stack = player.getItemInHand(hand);
+            var item = stack.getItem();
+            var itemClass = item.getClass();
+            if (declaresMethod(itemClass, "use", Level.class, Player.class, InteractionHand.class))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static boolean declaresMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        try {
+            clazz.getDeclaredMethod(name, parameterTypes);
+            return true;
+        } catch (NoSuchMethodException exception) {
+            return false;
+        }
     }
 }
