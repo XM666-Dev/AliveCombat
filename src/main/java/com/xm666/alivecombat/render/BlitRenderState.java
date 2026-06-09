@@ -1,4 +1,4 @@
-package com.xm666.alivecombat.client;
+package com.xm666.alivecombat.render;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;

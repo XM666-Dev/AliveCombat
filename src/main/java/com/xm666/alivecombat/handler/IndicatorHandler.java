@@ -1,7 +1,7 @@
 package com.xm666.alivecombat.handler;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.xm666.alivecombat.client.BlitRenderState;
+import com.xm666.alivecombat.render.BlitRenderState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
