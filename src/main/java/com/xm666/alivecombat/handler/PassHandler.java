@@ -4,20 +4,18 @@ import com.xm666.alivecombat.AliveCombat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -30,6 +28,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.Tags;
+
+import java.lang.reflect.Method;
 
 @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
@@ -64,24 +64,15 @@ public class PassHandler {
             public VoxelShape getBlockShape(BlockState blockState, BlockGetter level, BlockPos pos) {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);
-                if (interactsBlock(blockHitResult)) return voxelShape;
-
-                if (stack != null && stack.isCorrectToolForDrops(blockState) && isNotAxeForGrass(stack, blockState))
-                    return voxelShape;
+                if (interactsBlock(blockHitResult) || isRequiredToolForDrops(stack, blockState)) return voxelShape;
 
                 return Block.COLLIDER.get(blockState, level, pos, collisionContext);
             }
         };
     }
 
-    private static boolean isNotAxeForGrass(ItemStack stack, BlockState blockState) {
-        var tool = stack.get(DataComponents.TOOL);
-        if (tool == null) return true;
-
-        var blocks = BuiltInRegistries.BLOCK.getOrCreateTag(BlockTags.MINEABLE_WITH_AXE);
-        return tool.rules().stream().allMatch(rule -> rule.blocks() != blocks)
-                || !blockState.is(BlockTags.MINEABLE_WITH_AXE)
-                || !blockState.is(Blocks.SHORT_GRASS) && !blockState.is(Blocks.TALL_GRASS);
+    private static boolean isRequiredToolForDrops(ItemStack stack, BlockState blockState) {
+        return stack != null && stack.isCorrectToolForDrops(blockState) && blockState.requiresCorrectToolForDrops();
     }
 
     public static HitResult filterHitResult(HitResult hitResult, Vec3 pos) {
@@ -99,9 +90,9 @@ public class PassHandler {
 
         var target = entityHitResult.getEntity();
         var targetClass = target.getClass();
-        return declaresMethod(targetClass, "interactAt", Player.class, Vec3.class, InteractionHand.class)
-                || declaresMethod(targetClass, "interact", Player.class, InteractionHand.class)
-                || declaresMethod(targetClass, "mobInteract", Player.class, InteractionHand.class)
+        return declaresMethod(targetClass, Entity.class, "interactAt", Player.class, Vec3.class, InteractionHand.class)
+                || declaresMethod(targetClass, Entity.class, "interact", Player.class, InteractionHand.class)
+                || declaresMethod(targetClass, Mob.class, "mobInteract", Player.class, InteractionHand.class)
                 || interactsLivingEntity(target);
     }
 
@@ -115,7 +106,7 @@ public class PassHandler {
             var stack = player.getItemInHand(hand);
             var item = stack.getItem();
             var itemClass = item.getClass();
-            if (declaresMethod(itemClass, "interactLivingEntity", ItemStack.class, Player.class, LivingEntity.class, InteractionHand.class))
+            if (declaresMethod(itemClass, Item.class, "interactLivingEntity", ItemStack.class, Player.class, LivingEntity.class, InteractionHand.class))
                 return true;
         }
 
@@ -131,40 +122,8 @@ public class PassHandler {
         var blockState = level.getBlockState(blockHitResult.getBlockPos());
         var block = blockState.getBlock();
         var blockClass = block.getClass();
-        return usesItemFirst()
-                || declaresMethod(blockClass, "useItemOn", ItemStack.class, BlockState.class, Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class)
-                || declaresMethod(blockClass, "useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
-        //|| usesItem();
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    private static boolean usesItemFirst() {
-        var mc = Minecraft.getInstance();
-        var player = mc.player;
-        for (var hand : InteractionHand.values()) {
-            var stack = player.getItemInHand(hand);
-            var item = stack.getItem();
-            var itemClass = item.getClass();
-            if (declaresMethod(itemClass, "onItemUseFirst", ItemStack.class, UseOnContext.class))
-                return true;
-        }
-
-        return false;
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    private static boolean usesItem() {
-        var mc = Minecraft.getInstance();
-        var player = mc.player;
-        for (var hand : InteractionHand.values()) {
-            var stack = player.getItemInHand(hand);
-            var item = stack.getItem();
-            var itemClass = item.getClass();
-            if (declaresMethod(itemClass, "useOn", UseOnContext.class))
-                return true;
-        }
-
-        return false;
+        return declaresMethod(blockClass, BlockBehaviour.class, "useItemOn", ItemStack.class, BlockState.class, Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class)
+                || declaresMethod(blockClass, BlockBehaviour.class, "useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -175,19 +134,28 @@ public class PassHandler {
             var stack = player.getItemInHand(hand);
             var item = stack.getItem();
             var itemClass = item.getClass();
-            if (declaresMethod(itemClass, "use", Level.class, Player.class, InteractionHand.class))
+            if (declaresMethod(itemClass, Item.class, "use", Level.class, Player.class, InteractionHand.class))
                 return true;
         }
 
         return false;
     }
 
-    private static boolean declaresMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
-        try {
-            clazz.getDeclaredMethod(name, parameterTypes);
-            return true;
-        } catch (NoSuchMethodException exception) {
-            return false;
+    private static boolean declaresMethod(Class<?> clazz, Class<?> baseClass, String name, Class<?>... parameterTypes) {
+        var method = findDeclaredMethod(clazz, name, parameterTypes);
+        return method != null && method.getDeclaringClass() != baseClass;
+    }
+
+    private static Method findDeclaredMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        var current = clazz;
+        while (current != null) {
+            try {
+                return current.getDeclaredMethod(name, parameterTypes);
+            } catch (NoSuchMethodException e) {
+                current = current.getSuperclass();
+            }
         }
+
+        return null;
     }
 }
