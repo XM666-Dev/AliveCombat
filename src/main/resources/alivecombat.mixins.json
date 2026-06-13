@@ -10,7 +10,6 @@
     "requireAnnotations": true
   },
   "client": [
-    "aero_cam_sync.PickMixin$GameRendererMixin",
     "alivecombat.AttackParticleMixin$ClientPacketListenerMixin",
     "alivecombat.AutoAttackMixin$MinecraftMixin",
     "alivecombat.AutoAttackMixin$MultiPlayerGameModeMixin",
