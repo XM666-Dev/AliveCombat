@@ -40,7 +40,8 @@ public class PassMixin {
         private static class EntityMixin {
             @WrapOperation(method = "pick", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/ClipContext$Block;OUTLINE:Lnet/minecraft/world/level/ClipContext$Block;", opcode = Opcodes.GETSTATIC))
             private ClipContext.Block wrapBlock(Operation<ClipContext.Block> original) {
-                return PassHandler.passCollisionless ? ClipContext.Block.COLLIDER : original.call();
+                var entity = (Entity) (Object) this;
+                return entity.level().isClientSide() && PassHandler.passCollisionless ? ClipContext.Block.COLLIDER : original.call();
             }
         }
     }
@@ -70,7 +71,7 @@ public class PassMixin {
         private static class EntityMixin {
             @WrapOperation(method = "pick", at = @At(value = "NEW", target = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/ClipContext;"))
             private ClipContext wrapClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity, Operation<ClipContext> original) {
-                return PassHandler.passCollisionlessExtra ? PassHandler.getPassClipContext(from, to, block, fluid, entity) : original.call(from, to, block, fluid, entity);
+                return entity.level().isClientSide() && PassHandler.passCollisionlessExtra ? PassHandler.getPassClipContext(from, to, block, fluid, entity) : original.call(from, to, block, fluid, entity);
             }
         }
     }
@@ -96,9 +97,10 @@ public class PassMixin {
         private static class LivingEntityMixin {
             @ModifyReturnValue(method = "isPickable", at = @At(value = "RETURN"))
             private boolean modifyPickable(boolean original) {
-                if (!PassHandler.passEnabled || !PassHandler.passDead || !original) return original;
-
                 var living = (LivingEntity) (Object) this;
+                if (!living.level().isClientSide() || !PassHandler.passEnabled || !PassHandler.passDead || !original)
+                    return original;
+
                 return living.isAlive();
             }
         }
@@ -127,15 +129,15 @@ public class PassMixin {
 
         @Mixin(LivingEntity.class)
         private static class LivingEntityMixin {
-            @SuppressWarnings("DataFlowIssue")
             @ModifyReturnValue(method = "isPickable", at = @At(value = "RETURN"))
             private boolean modifyPickable(boolean original) {
-                if (!PassHandler.passEnabled || !PassHandler.passAlly || !original) return original;
+                var living = (LivingEntity) (Object) this;
+                if (!living.level().isClientSide() || !PassHandler.passEnabled || !PassHandler.passAlly || !original)
+                    return original;
 
                 var mc = Minecraft.getInstance();
                 var player = mc.player;
-                var living = (LivingEntity) (Object) this;
-                return !living.isAlliedTo(player);
+                return player != null && !living.isAlliedTo(player);
             }
         }
     }

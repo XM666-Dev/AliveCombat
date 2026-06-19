@@ -21,7 +21,6 @@ public class AutoAttackHandler {
     public static boolean canContinueAttack = true;
     public static boolean disableSwingHand = false;
 
-    @SuppressWarnings("DataFlowIssue")
     public static boolean readyAttack() {
         var mc = Minecraft.getInstance();
         if (!(mc.hitResult instanceof EntityHitResult)) return false;

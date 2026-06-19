@@ -55,7 +55,6 @@ public class PassHandler {
 
         var weapon = living.getWeaponItem();
         return weapon.is(Tags.Items.MELEE_WEAPON_TOOLS) ||
-                weapon.is(Tags.Items.RANGED_WEAPON_TOOLS) ||
                 weapon.is(Tags.Items.MINING_TOOL_TOOLS);
     }
 
@@ -98,7 +97,6 @@ public class PassHandler {
                 || interactsLivingEntity(target);
     }
 
-    @SuppressWarnings("DataFlowIssue")
     private static boolean interactsLivingEntity(Entity target) {
         if (!(target instanceof LivingEntity)) return false;
 
@@ -115,7 +113,6 @@ public class PassHandler {
         return false;
     }
 
-    @SuppressWarnings("DataFlowIssue")
     private static boolean interactsBlock(HitResult hitResult) {
         if (!(hitResult instanceof BlockHitResult blockHitResult)) return false;
 
@@ -128,7 +125,6 @@ public class PassHandler {
                 || declaresMethod(blockClass, BlockBehaviour.class, "useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
     }
 
-    @SuppressWarnings("DataFlowIssue")
     private static boolean interactsItem() {
         var mc = Minecraft.getInstance();
         var player = mc.player;
