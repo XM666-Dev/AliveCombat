@@ -23,7 +23,6 @@ import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 public class AttackParticleHandler {
     private static final RandomSource random = RandomSource.create();
 
-    @SuppressWarnings("DataFlowIssue")
     private static void sweepAttack() {
         var player = Minecraft.getInstance().player;
         var xOffset = -Mth.sin(player.getYRot() * Mth.DEG_TO_RAD);
@@ -32,7 +31,6 @@ public class AttackParticleHandler {
         sendParticles(getParticleType(), player.getX() + xOffset, player.getY(0.5), player.getZ() + zOffset, 0, xOffset, 0.0, zOffset, 0.0);
     }
 
-    @SuppressWarnings({"SameParameterValue", "DataFlowIssue"})
     private static <T extends ParticleOptions> void sendParticles(T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed) {
         var mc = Minecraft.getInstance();
         var blockPos = mc.player.blockPosition();
