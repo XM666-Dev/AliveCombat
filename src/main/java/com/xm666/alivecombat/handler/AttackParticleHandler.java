@@ -55,13 +55,11 @@ public class AttackParticleHandler {
         }
     }
 
-    @SuppressWarnings({"DataFlowIssue", "OptionalGetWithoutIsPresent"})
     private static SoundEvent getSoundEvent() {
         var type = "entity.player.attack.sweep";
         return BuiltInRegistries.SOUND_EVENT.get(Identifier.tryParse(type)).get().value();
     }
 
-    @SuppressWarnings({"DataFlowIssue", "OptionalGetWithoutIsPresent"})
     private static SimpleParticleType getParticleType() {
         var type = "minecraft:sweep_attack";
         return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(Identifier.tryParse(type)).get().value();
