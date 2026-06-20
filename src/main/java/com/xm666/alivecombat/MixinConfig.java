@@ -35,5 +35,5 @@ public class MixinConfig {
     public static final ModConfigSpec.BooleanValue CHARGE_INDICATOR_ENABLED = BUILDER
             .define("chargeIndicatorEnabled", true);
 
-    static final ModConfigSpec SPEC = BUILDER.build();
+    public static final ModConfigSpec SPEC = BUILDER.build();
 }

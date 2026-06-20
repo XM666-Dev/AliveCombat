@@ -5,7 +5,6 @@ import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.mclanguageprovider.MinecraftModContainer;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -18,7 +17,7 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        var container = new MinecraftModContainer(FMLLoader.getCurrent().getLoadingModList().getModFileById(AliveCombat.MODID).getMods().getFirst());
+        var container = new MinecraftModContainer(FMLLoader.getLoadingModList().getModFileById(AliveCombat.MODID).getMods().getFirst());
         container.registerConfig(ModConfig.Type.STARTUP, MixinConfig.SPEC);
         this.mixinPackage = mixinPackage;
     }
@@ -30,21 +29,20 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        var packageFromIndex = mixinPackage.length() + 1;
+        var packageToIndex = mixinClassName.indexOf('.', packageFromIndex);
+        var packageName = mixinClassName.substring(packageFromIndex, packageToIndex);
+        if (FMLLoader.getLoadingModList().getModFileById(packageName) == null) return false;
+
         var toIndex = mixinClassName.lastIndexOf('$');
         var fromIndex = Math.max(
                 mixinClassName.lastIndexOf('.', toIndex - 1),
                 mixinClassName.lastIndexOf('$', toIndex - 1)
         ) + 1;
         var path = mixinClassName.substring(fromIndex, toIndex);
-        path = Strings.CS.removeEnd(path, "Mixin");
+        path = StringUtils.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
-
-        var packageFromIndex = mixinPackage.length() + 1;
-        var packageToIndex = mixinClassName.indexOf('.', packageFromIndex);
-        var packageName = mixinClassName.substring(packageFromIndex, packageToIndex);
-        if (FMLLoader.getCurrent().getLoadingModList().getModFileById(packageName) == null) return false;
-
         var value = MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path);
         return value == null || value.get();
     }
