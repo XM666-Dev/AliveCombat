@@ -29,6 +29,11 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        var packageFromIndex = mixinPackage.length() + 1;
+        var packageToIndex = mixinClassName.indexOf('.', packageFromIndex);
+        var packageName = mixinClassName.substring(packageFromIndex, packageToIndex);
+        if (FMLLoader.getLoadingModList().getModFileById(packageName) == null) return false;
+
         var toIndex = mixinClassName.lastIndexOf('$');
         var fromIndex = Math.max(
                 mixinClassName.lastIndexOf('.', toIndex - 1),
@@ -38,12 +43,6 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
         path = StringUtils.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
-
-        var packageFromIndex = mixinPackage.length() + 1;
-        var packageToIndex = mixinClassName.indexOf('.', packageFromIndex);
-        var packageName = mixinClassName.substring(packageFromIndex, packageToIndex);
-        if (FMLLoader.getLoadingModList().getModFileById(packageName) == null) return false;
-
         var value = MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path);
         return value == null || value.get();
     }
