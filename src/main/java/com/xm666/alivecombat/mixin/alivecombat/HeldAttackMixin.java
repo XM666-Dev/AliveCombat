@@ -23,7 +23,7 @@ public class HeldAttackMixin {
             if (!using) return false;
 
             var mc = Minecraft.getInstance();
-            if (HeldAttackHandler.isUsingShield(mc.player)) return true;
+            if (HeldAttackHandler.isUsingBlocking(mc.player)) return true;
 
             HeldAttackHandler.heldAttack = !HeldAttackHandler.heldAttack;
             return !HeldAttackHandler.heldAttack;
