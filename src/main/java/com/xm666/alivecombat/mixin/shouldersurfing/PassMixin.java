@@ -1,7 +1,7 @@
 package com.xm666.alivecombat.mixin.shouldersurfing;
 
-import com.github.exopandora.shouldersurfing.api.client.world.phys.PickContext;
-import com.github.exopandora.shouldersurfing.client.world.phys.ObjectPicker;
+import com.github.exopandora.shouldersurfing.api.model.PickContext;
+import com.github.exopandora.shouldersurfing.client.ObjectPicker;
 import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -37,7 +37,7 @@ public class PassMixin {
 
         @Mixin(PickContext.class)
         private static class PickContextMixin {
-            @WrapOperation(method = "toClipContext", at = @At(value = "INVOKE", target = "Lcom/github/exopandora/shouldersurfing/api/client/world/phys/PickContext;blockContext()Lnet/minecraft/world/level/ClipContext$Block;"))
+            @WrapOperation(method = "toClipContext", at = @At(value = "INVOKE", target = "Lcom/github/exopandora/shouldersurfing/api/model/PickContext;blockContext()Lnet/minecraft/world/level/ClipContext$Block;"))
             private ClipContext.Block wrapBlock(PickContext instance, Operation<ClipContext.Block> original) {
                 return PassHandler.passCollisionless ? ClipContext.Block.COLLIDER : original.call(instance);
             }
