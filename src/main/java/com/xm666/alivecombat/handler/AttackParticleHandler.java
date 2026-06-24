@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -33,19 +34,34 @@ public class AttackParticleHandler {
         return attackStrengthScale > 0.9F;
     }
 
-    private static void addParticle(Player player, boolean isCriticalHit, boolean isSprintHit) {
-        var xOffset = -Mth.sin(player.getYRot() * Mth.DEG_TO_RAD);
-        var zOffset = Mth.cos(player.getYRot() * Mth.DEG_TO_RAD);
+    private static void addParticle(Player player, Entity target, boolean isCriticalHit, boolean isSprintHit) {
+        var mc = Minecraft.getInstance();
+        var partialTick = mc.getTimer().getGameTimeDeltaPartialTick(true);
+        var boundingBox = target.getBoundingBox();
+        var eyePosition = player.getEyePosition(partialTick);
+        var viewVector = player.getViewVector(partialTick);
+        var entityInteractionRange = player.entityInteractionRange();
+        var hitVector = viewVector.scale(entityInteractionRange);
+        var hitPosition = eyePosition.add(hitVector);
+        var optionalHitPoint = ClipHandler.expandedClip(boundingBox, eyePosition, hitPosition);
+        if (optionalHitPoint.isEmpty()) return;
+
         var x = player.getX();
         var y = player.getY();
         var z = player.getZ();
         var soundEvent = getSoundEvent();
         var soundSource = player.getSoundSource();
+
         var partialType = getParticleType();
-        var center = player.getY(0.5);
+        var hitPoint = optionalHitPoint.get();
+        var originalX = x - Mth.sin(player.getYRot() * Mth.DEG_TO_RAD);
+        var originalY = player.getY(0.5);
+        var originalZ = z + Mth.cos(player.getYRot() * Mth.DEG_TO_RAD);
+        var originalPosition = new Vec3(originalX, originalY, originalZ);
+        var position = hitPoint.lerp(originalPosition, 0.5);
         var roll = getParticleRoll(isCriticalHit, isSprintHit);
         player.level().playSound(player, x, y, z, soundEvent, soundSource, 1.0F, 1.0F);
-        sendParticles(partialType, x + xOffset, center, z + zOffset, 0, 0.0, roll, zOffset, 1.0);
+        sendParticles(partialType, position.x, position.y, position.z, 0, 0.0, roll, 0.0, 1.0);
     }
 
     private static SoundEvent getSoundEvent() {
@@ -59,13 +75,11 @@ public class AttackParticleHandler {
     }
 
     private static double getParticleRoll(boolean isCriticalHit, boolean isSprintHit) {
-        if (isCriticalHit) {
-            return Mth.PI * 0.5;
-        } else if (isSprintHit) {
-            return 0.0;
-        } else {
-            return Mth.PI * 0.25;
-        }
+        if (isCriticalHit) return Mth.PI * 0.5;
+
+        if (isSprintHit) return 0.0;
+
+        return Mth.PI * 0.25;
     }
 
     private static <T extends ParticleOptions> void sendParticles(T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed) {
@@ -99,7 +113,7 @@ public class AttackParticleHandler {
             var player = event.getEntity();
             if (!canAddParticle(player)) return;
 
-            addParticle(player, event.isVanillaCritical(), event.getEntity().isSprinting());
+            addParticle(player, event.getTarget(), event.isVanillaCritical(), event.getEntity().isSprinting());
         }
     }
 
