@@ -28,7 +28,7 @@ public class AttackParticleMixin {
     private static class Provider {
         @ModifyReturnValue(method = "createParticle(Lnet/minecraft/core/particles/SimpleParticleType;Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("RETURN"))
         private Particle modifyParticle(Particle original, SimpleParticleType type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed) {
-            original.roll = original.oRoll = (float) ySpeed;
+            original.roll = original.oRoll = (float) -ySpeed;
             return original;
         }
     }

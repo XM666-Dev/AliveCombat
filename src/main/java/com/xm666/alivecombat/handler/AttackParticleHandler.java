@@ -28,8 +28,8 @@ public class AttackParticleHandler {
     private static boolean canAddParticle(Player player) {
         if (!player.isLocalPlayer()) return false;
 
-        var weapon = player.getWeaponItem();
-        if (!weapon.is(Tags.Items.MELEE_WEAPON_TOOLS)) return false;
+        var weapon = player.getMainHandItem();
+        if (!weapon.is(Tags.Items.TOOLS)) return false;
 
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         return attackStrengthScale > 0.9F;
@@ -37,7 +37,7 @@ public class AttackParticleHandler {
 
     private static void addParticle(Player player, Entity target, boolean isCriticalHit, boolean isSprintHit) {
         var mc = Minecraft.getInstance();
-        var partialTick = mc.getTimer().getGameTimeDeltaPartialTick(true);
+        var partialTick = mc.getPartialTick();
         var boundingBox = target.getBoundingBox();
         var eyePosition = player.getEyePosition(partialTick);
         var viewVector = player.getViewVector(partialTick);
