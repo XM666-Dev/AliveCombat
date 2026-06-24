@@ -36,7 +36,7 @@ public class AttackParticleHandler {
 
     private static void addParticle(Player player, Entity target, boolean isCriticalHit, boolean isSprintHit) {
         var mc = Minecraft.getInstance();
-        var partialTick = mc.getTimer().getGameTimeDeltaPartialTick(true);
+        var partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         var boundingBox = target.getBoundingBox();
         var eyePosition = player.getEyePosition(partialTick);
         var viewVector = player.getViewVector(partialTick);
@@ -66,12 +66,12 @@ public class AttackParticleHandler {
 
     private static SoundEvent getSoundEvent() {
         var location = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.tryParse(location));
+        return BuiltInRegistries.SOUND_EVENT.get(Identifier.tryParse(location)).get().value();
     }
 
     private static SimpleParticleType getParticleType() {
         var location = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(location));
+        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(Identifier.tryParse(location)).get().value();
     }
 
     private static double getParticleRoll(boolean isCriticalHit, boolean isSprintHit) {
