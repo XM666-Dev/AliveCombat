@@ -55,11 +55,7 @@ public class AttackParticleHandler {
 
         var partialType = getParticleType();
         var hitPoint = optionalHitPoint.get();
-        var originalX = x - Mth.sin(player.getYRot() * Mth.DEG_TO_RAD);
-        var originalY = player.getY(0.5);
-        var originalZ = z + Mth.cos(player.getYRot() * Mth.DEG_TO_RAD);
-        var originalPosition = new Vec3(originalX, originalY, originalZ);
-        var position = hitPoint.lerp(originalPosition, 0.5);
+        var position = hitPoint.subtract(viewVector.scale(0.5));
         var roll = getParticleRoll(isCriticalHit, isSprintHit);
         player.level().playSound(player, x, y, z, soundEvent, soundSource, 1.0F, 1.0F);
         sendParticles(partialType, position.x, position.y, position.z, 0, 0.0, roll, 0.0, 1.0);
