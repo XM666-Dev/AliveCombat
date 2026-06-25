@@ -10,7 +10,6 @@
     "requireAnnotations": true
   },
   "client": [
-    "alivecombat.AttackParticleMixin$AttackSweepParticleMixin",
     "alivecombat.AttackParticleMixin$ClientPacketListenerMixin",
     "alivecombat.AttackParticleMixin$Provider",
     "alivecombat.AutoAttackMixin$MinecraftMixin",
