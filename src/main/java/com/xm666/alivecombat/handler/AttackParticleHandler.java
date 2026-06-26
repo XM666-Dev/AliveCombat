@@ -7,7 +7,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -46,23 +45,11 @@ public class AttackParticleHandler {
         var optionalHitPoint = ClipHandler.expandedClip(boundingBox, eyePosition, hitPosition);
         if (optionalHitPoint.isEmpty()) return;
 
-        var x = player.getX();
-        var y = player.getY();
-        var z = player.getZ();
-        var soundEvent = getSoundEvent();
-        var soundSource = player.getSoundSource();
-
         var partialType = getParticleType();
         var hitPoint = optionalHitPoint.get();
         var position = hitPoint.subtract(viewVector.scale(0.5));
         var roll = getParticleRoll(isCriticalHit, isSprintHit);
-        player.level().playSound(player, x, y, z, soundEvent, soundSource, 1.0F, 1.0F);
         sendParticles(partialType, position.x, position.y, position.z, 0, 0.0, roll, 0.0, 1.0);
-    }
-
-    private static SoundEvent getSoundEvent() {
-        var location = "entity.player.attack.sweep";
-        return BuiltInRegistries.SOUND_EVENT.get(Identifier.tryParse(location)).get().value();
     }
 
     private static SimpleParticleType getParticleType() {
