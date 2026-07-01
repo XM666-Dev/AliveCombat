@@ -3,6 +3,7 @@ package com.xm666.alivecombat.mixin.alivecombat;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.xm666.alivecombat.compat.SodiumHandler;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.particle.AttackSweepParticle;
@@ -21,7 +22,7 @@ public class AttackParticleMixin {
     private static class Provider {
         @ModifyReturnValue(method = "createParticle(Lnet/minecraft/core/particles/SimpleParticleType;Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("RETURN"))
         private Particle modifyParticle(Particle original, SimpleParticleType type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed) {
-            original.roll = original.oRoll = (float) ySpeed;
+            original.roll = original.oRoll = (float) ySpeed * SodiumHandler.getParticleRollDirection();
             return original;
         }
     }

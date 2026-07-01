@@ -58,7 +58,7 @@ public class AttackParticleHandler {
     }
 
     private static double getParticleRoll(boolean isCriticalHit, boolean isSprintHit) {
-        return isCriticalHit || isSprintHit ? Mth.PI * 0.5 : 0.0;
+        return isCriticalHit || isSprintHit ? -Mth.PI * 0.5 : 0.0;
     }
 
     private static <T extends ParticleOptions> void sendParticles(T type, double posX, double posY, double posZ, int particleCount, double xOffset, double yOffset, double zOffset, double speed) {
