@@ -4,7 +4,7 @@ import net.neoforged.fml.ModList;
 
 public class SodiumHandler {
     public static float getParticleRollDirection() {
-        return isSodiumLoaded() ? 1.0F : -1.0F;
+        return 1.0F;
     }
 
     private static boolean isSodiumLoaded() {
