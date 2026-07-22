@@ -143,7 +143,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
-    implementation "curse.maven:shoulder-surfing-reloaded-243190:8301734"
+    implementation "curse.maven:shoulder-surfing-reloaded-243190:8445196"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
