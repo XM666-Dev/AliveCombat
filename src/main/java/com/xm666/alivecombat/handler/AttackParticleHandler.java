@@ -5,21 +5,22 @@ import com.xm666.alivecombat.MixinConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.entity.player.CriticalHitEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class AttackParticleHandler {
     private static final RandomSource random = RandomSource.create();
@@ -40,7 +41,7 @@ public class AttackParticleHandler {
         var boundingBox = target.getBoundingBox();
         var eyePosition = player.getEyePosition(partialTick);
         var viewVector = player.getViewVector(partialTick);
-        var entityInteractionRange = player.entityInteractionRange();
+        var entityInteractionRange = player.getEntityReach();
         var hitVector = viewVector.scale(entityInteractionRange);
         var hitPosition = eyePosition.add(hitVector);
         var optionalHitPoint = ClipHandler.expandedClip(boundingBox, eyePosition, hitPosition);
@@ -55,7 +56,7 @@ public class AttackParticleHandler {
 
     private static SimpleParticleType getParticleType() {
         var location = "minecraft:sweep_attack";
-        return (SimpleParticleType) BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.tryParse(location));
+        return (SimpleParticleType) ForgeRegistries.PARTICLE_TYPES.getValue(ResourceLocation.tryParse(location));
     }
 
     private static double getParticleRoll(boolean isCriticalHit, boolean isSprintHit) {
@@ -97,7 +98,8 @@ public class AttackParticleHandler {
         }
     }
 
-    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
+    @OnlyIn(Dist.CLIENT)
+    @Mod(value = AliveCombat.MODID)
     public static class AttackParticleConfig {
         public AttackParticleConfig(IEventBus modEventBus) {
             modEventBus.register(AttackParticleConfig.class);
@@ -107,7 +109,7 @@ public class AttackParticleHandler {
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
             if (!MixinConfig.ATTACK_PARTICLE_ENABLED.get()) return;
 
-            NeoForge.EVENT_BUS.register(AttackParticleClient.class);
+            MinecraftForge.EVENT_BUS.register(AttackParticleClient.class);
         }
     }
 }

@@ -7,15 +7,16 @@ import com.xm666.alivecombat.compat.ShoulderSurfingHandler;
 import com.xm666.alivecombat.timer.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 public class AutoAttackHandler {
     public static final Timer timer = new Timer(() -> Config.AUTO_ATTACK_DURATION.get().floatValue());
@@ -45,7 +46,9 @@ public class AutoAttackHandler {
 
     public static class AutoAttackClient {
         @SubscribeEvent
-        public static void onRenderFramePost(RenderFrameEvent.Post event) {
+        public static void onRenderFramePost(TickEvent.RenderTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+
             var mc = Minecraft.getInstance();
             if (mc.player == null) return;
 
@@ -66,7 +69,8 @@ public class AutoAttackHandler {
         }
     }
 
-    @Mod(value = AliveCombat.MODID, dist = Dist.CLIENT)
+    @OnlyIn(Dist.CLIENT)
+    @Mod(value = AliveCombat.MODID)
     public static class AutoAttackConfig {
         public AutoAttackConfig(IEventBus modEventBus) {
             modEventBus.register(AutoAttackConfig.class);
@@ -76,7 +80,7 @@ public class AutoAttackHandler {
         public static void onModConfigLoading(ModConfigEvent.Loading event) {
             if (!MixinConfig.AUTO_ATTACK_ENABLED.get()) return;
 
-            NeoForge.EVENT_BUS.register(AutoAttackClient.class);
+            MinecraftForge.EVENT_BUS.register(AutoAttackClient.class);
         }
     }
 }

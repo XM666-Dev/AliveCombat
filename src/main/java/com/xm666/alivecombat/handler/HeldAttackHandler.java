@@ -2,7 +2,7 @@ package com.xm666.alivecombat.handler;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.common.ToolActions;
+import net.minecraftforge.common.ToolActions;
 
 public class HeldAttackHandler {
     public static boolean heldAttack = false;

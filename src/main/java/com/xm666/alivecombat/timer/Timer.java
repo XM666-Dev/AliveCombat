@@ -2,10 +2,10 @@ package com.xm666.alivecombat.timer;
 
 import com.xm666.alivecombat.AliveCombat;
 import net.minecraft.client.Minecraft;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.function.Supplier;
 
@@ -36,11 +36,11 @@ public class Timer {
         return tickCount() < end;
     }
 
-    @EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+    @Mod.EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
     private static class TimerClient {
         @SubscribeEvent
-        public static void onClientTick(ClientTickEvent.Pre event) {
-            if (Minecraft.getInstance().isPaused()) return;
+        public static void onClientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.START || Minecraft.getInstance().isPaused()) return;
 
             ++ticks;
         }

@@ -12,8 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -60,7 +60,7 @@ public class AutoAttackMixin {
 
     @Mixin(MultiPlayerGameMode.class)
     private static class MultiPlayerGameModeMixin {
-        @Inject(method = "destroyBlock", at = @At(value = "RETURN", ordinal = 4))
+        @Inject(method = "destroyBlock", at = @At(value = "RETURN", ordinal = 5))
         private void onDestroyBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
             AutoAttackHandler.timer.stop();
         }

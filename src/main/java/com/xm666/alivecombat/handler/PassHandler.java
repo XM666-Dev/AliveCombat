@@ -23,15 +23,15 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.Method;
 
-@EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = AliveCombat.MODID, value = Dist.CLIENT)
 public class PassHandler {
     public static boolean passEnabled = true;
     public static boolean passCollisionless = false;
@@ -40,7 +40,9 @@ public class PassHandler {
     public static boolean passAlly = true;
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
         while (InputHandler.TOGGLE_PASS_MAPPING.get().consumeClick()) {
             passEnabled = !passEnabled;
 
@@ -60,7 +62,7 @@ public class PassHandler {
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
         var collisionContext = CollisionContext.of(entity);
         var stack = entity instanceof LivingEntity living ? living.getMainHandItem() : null;
-        return new ClipContext(from, to, block, fluid, collisionContext) {
+        return new ClipContext(from, to, block, fluid, entity) {
             public VoxelShape getBlockShape(BlockState blockState, BlockGetter level, BlockPos pos) {
                 var voxelShape = Block.OUTLINE.get(blockState, level, pos, collisionContext);
                 var blockHitResult = level.clipWithInteractionOverride(from, to, pos, voxelShape, blockState);

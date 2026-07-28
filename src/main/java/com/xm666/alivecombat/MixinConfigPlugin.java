@@ -1,9 +1,9 @@
 package com.xm666.alivecombat;
 
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.fml.mclanguageprovider.MinecraftModContainer;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.mclanguageprovider.MinecraftModContainer;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -43,7 +43,7 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
         path = StringUtils.removeEnd(path, "Mixin");
         path = StringUtils.uncapitalize(path);
         path += "Enabled";
-        var value = MixinConfig.SPEC.getValues().<ModConfigSpec.BooleanValue>get(path);
+        var value = MixinConfig.SPEC.getValues().<ForgeConfigSpec.BooleanValue>get(path);
         return value == null || value.get();
     }
 

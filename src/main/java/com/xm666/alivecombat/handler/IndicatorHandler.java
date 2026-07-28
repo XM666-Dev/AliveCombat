@@ -67,12 +67,14 @@ public class IndicatorHandler {
     }
 
     private static Optional<Integer> getChargeDuration(ItemStack stack, LivingEntity living) {
-        return Optional.ofNullable(
-                switch (stack.getItem()) {
-                    case BowItem ignored -> 20;
-                    case CrossbowItem ignored -> CrossbowItem.getChargeDuration(stack);
-                    case TridentItem ignored -> 10;
-                    default -> null;
-                });
+        var item = stack.getItem();
+        if (item instanceof BowItem) {
+            return Optional.of(20);
+        } else if (item instanceof CrossbowItem) {
+            return Optional.of(CrossbowItem.getChargeDuration(stack));
+        } else if (item instanceof TridentItem) {
+            return Optional.of(10);
+        }
+        return Optional.empty();
     }
 }

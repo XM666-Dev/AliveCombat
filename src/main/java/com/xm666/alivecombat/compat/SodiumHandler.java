@@ -1,6 +1,6 @@
 package com.xm666.alivecombat.compat;
 
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 
 public class SodiumHandler {
     public static float getParticleRollDirection() {
