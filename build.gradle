@@ -148,6 +148,12 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+    dependencies {
+        compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.4"))
+        implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.5.4")) {
+            jarJar.ranged(it, "[0.5.4,)")
+        }
+    }
     implementation fg.deobf("curse.maven:shoulder-surfing-reloaded-243190:8444973")
 }
 
