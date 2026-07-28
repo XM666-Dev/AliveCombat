@@ -88,9 +88,9 @@ public class PassMixin {
                 if (!PassHandler.passEnabled || passHitResult.getType() != HitResult.Type.BLOCK) return passHitResult;
 
                 PassHandler.passDead = false;
-                var orignalHitResult = original.call(context, interactionRangeOverride, partialTick, player);
+                var originalHitResult = original.call(context, interactionRangeOverride, partialTick, player);
                 PassHandler.passDead = true;
-                if (orignalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
+                if (originalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
 
                 return PassHandler.filterHitResult(passHitResult, player.getEyePosition(partialTick));
             }
