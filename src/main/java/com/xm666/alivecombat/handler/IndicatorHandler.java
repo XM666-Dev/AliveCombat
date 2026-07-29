@@ -31,7 +31,7 @@ public class IndicatorHandler {
             float uWidth,
             float vHeight
     ) {
-        if (uWidth == 0 || vHeight == 0) return;
+        if (uWidth == 0.0F || vHeight == 0.0F) return;
 
         var mc = Minecraft.getInstance();
         var guiSprites = mc.getGuiSprites();
@@ -46,10 +46,10 @@ public class IndicatorHandler {
 
         var matrix = guiGraphics.pose().last().pose();
         var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(matrix, x, y, 0).setUv(minU, minV);
-        buffer.addVertex(matrix, x, y + vHeight, 0).setUv(minU, maxV);
-        buffer.addVertex(matrix, x + uWidth, y + vHeight, 0).setUv(maxU, maxV);
-        buffer.addVertex(matrix, x + uWidth, y, 0).setUv(maxU, minV);
+        buffer.addVertex(matrix, x, y, 0.0F).setUv(minU, minV);
+        buffer.addVertex(matrix, x, y + vHeight, 0.0F).setUv(minU, maxV);
+        buffer.addVertex(matrix, x + uWidth, y + vHeight, 0.0F).setUv(maxU, maxV);
+        buffer.addVertex(matrix, x + uWidth, y, 0.0F).setUv(maxU, minV);
         BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
