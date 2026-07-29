@@ -33,7 +33,7 @@ public class AutoAttackMixin {
                 return true;
             }
 
-            if (!autoAttacked.get() && AutoAttackHandler.readyAttack()) {
+            if (!autoAttacked.get() && AutoAttackHandler.isAttackReady()) {
                 autoAttacked.set(true);
                 return true;
             }

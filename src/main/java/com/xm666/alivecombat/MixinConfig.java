@@ -18,7 +18,7 @@ public class MixinConfig {
             .define("passCollisionlessEnabled", true);
 
     public static final ModConfigSpec.BooleanValue PASS_COLLISIONLESS_EXTRA_ENABLED = BUILDER
-            .define("passCollisionlessExtraEnabled", true);
+            .define("passCollisionlessExtraEnabled", false);
 
     public static final ModConfigSpec.BooleanValue PASS_DEAD_ENABLED = BUILDER
             .define("passDeadEnabled", true);
