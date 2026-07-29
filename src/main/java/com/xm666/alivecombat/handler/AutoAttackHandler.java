@@ -37,7 +37,7 @@ public class AutoAttackHandler {
                 if (!mc.options.keyAttack.isDown()) yield false;
 
                 var scale = mc.player.getAttackStrengthScale(0.5F);
-                yield Config.AUTO_ATTACK_FAST.get() ? scale > 0.9F : scale >= 1.0F;
+                yield Config.AUTO_ATTACK_FAST.get() ? scale > 0.9F : scale == 1.0F;
             }
         };
     }
