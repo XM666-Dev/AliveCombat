@@ -31,7 +31,7 @@ public class IndicatorHandler {
             float uWidth,
             float vHeight
     ) {
-        if (uWidth == 0 || vHeight == 0) return;
+        if (uWidth == 0.0F || vHeight == 0.0F) return;
 
         var mc = Minecraft.getInstance();
         var guiSprites = mc.getGuiSprites();

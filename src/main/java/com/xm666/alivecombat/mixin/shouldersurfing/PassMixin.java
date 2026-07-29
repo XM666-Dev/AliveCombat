@@ -12,24 +12,29 @@ import com.xm666.alivecombat.handler.PassHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
 @OnlyIn(Dist.CLIENT)
 public class PassMixin {
     private static class PassCollisionlessMixin {
         @Mixin(ObjectPicker.class)
-        private static class ObjectPickerMixin {
-            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
-            private HitResult modifyHitResult(HitResult instance, @Local(argsOnly = true) Player player, @Local(name = "interactionRange") double interactionRange, @Local(argsOnly = true) float partialTick) {
+        private static abstract class ObjectPickerMixin {
+            @Shadow
+            public abstract BlockHitResult pickBlocks(PickContext context, double interactionRange, float partialTick);
+
+            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/BlockHitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
+            private BlockHitResult modifyHitResult(BlockHitResult instance, PickContext context, @Local(argsOnly = true) Player player, @Local(name = "interactionRange") double interactionRange, @Local(argsOnly = true) float partialTick) {
                 if (!PassHandler.passEnabled) return instance;
 
                 PassHandler.passCollisionless = true;
-                var hitResult = player.pick(interactionRange, partialTick, false);
+                var hitResult = pickBlocks(context, interactionRange, partialTick);
                 PassHandler.passCollisionless = false;
                 return hitResult;
             }
@@ -83,9 +88,9 @@ public class PassMixin {
                 if (!PassHandler.passEnabled || passHitResult.getType() != HitResult.Type.BLOCK) return passHitResult;
 
                 PassHandler.passDead = false;
-                var orignalHitResult = original.call(context, interactionRangeOverride, partialTick, player);
+                var originalHitResult = original.call(context, interactionRangeOverride, partialTick, player);
                 PassHandler.passDead = true;
-                if (orignalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
+                if (originalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
 
                 return PassHandler.filterHitResult(passHitResult, player.getEyePosition(partialTick));
             }
