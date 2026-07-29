@@ -34,7 +34,7 @@ public class IndicatorHandler {
             float width,
             float height
     ) {
-        if (width == 0 || height == 0) return;
+        if (width == 0.0F || height == 0.0F) return;
 
         var textureAtlasSprite = guiSprites.getSprite(sprite);
         var atlasLocation = textureAtlasSprite.atlasLocation();
