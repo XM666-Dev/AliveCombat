@@ -1,6 +1,5 @@
 package com.xm666.alivecombat.mixin.alivecombat;
 
-import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -20,20 +19,21 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @OnlyIn(Dist.CLIENT)
 public class PassMixin {
     private static class PassCollisionlessMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getLocation()Lnet/minecraft/world/phys/Vec3;", ordinal = 0))
-            private HitResult modifyHitResult(HitResult instance, @Local Entity entity, @Local(ordinal = 1) double entityInteractionRange, @Local(argsOnly = true) float partialTick) {
-                if (!PassHandler.passEnabled) return instance;
+            @ModifyVariable(method = "pick", at = @At(value = "LOAD", ordinal = 1), name = "d1")
+            private double modifyDistanceSquare(double distanceSquare, @Local(argsOnly = true) float partialTick, @Local Entity entity, @Local(name = "entityReach") double entityInteractionRange, @Local Vec3 eyePosition) {
+                if (!PassHandler.passEnabled) return distanceSquare;
 
                 PassHandler.passCollisionless = true;
                 var hitResult = entity.pick(entityInteractionRange, partialTick, false);
                 PassHandler.passCollisionless = false;
-                return hitResult;
+                return hitResult.getLocation().distanceToSqr(eyePosition);
             }
         }
 

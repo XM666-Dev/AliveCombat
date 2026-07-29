@@ -1,7 +1,7 @@
 package com.xm666.alivecombat.compat;
 
+import com.oblivioussp.spartanweaponry.api.ModToolActions;
 import net.minecraft.world.item.ItemStack;
-import org.xiyu.spartanweaponryunofficial.api.ModToolActions;
 
 public class SpartanWeaponryHandler {
     public static boolean canMeleeBlock(ItemStack stack) {
