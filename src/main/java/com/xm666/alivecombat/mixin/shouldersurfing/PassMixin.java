@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @OnlyIn(Dist.CLIENT)
 public class PassMixin {
     private static class PassCollisionlessMixin {
-        @Mixin(ObjectPicker.class)
+        @Mixin(value = ObjectPicker.class, remap = false)
         private static abstract class ObjectPickerMixin {
             @Shadow
             public abstract BlockHitResult pickBlocks(PickContext context, double interactionRange, float partialTick);
@@ -41,7 +41,7 @@ public class PassMixin {
             }
         }
 
-        @Mixin(PickContext.class)
+        @Mixin(value = PickContext.class, remap = false)
         private static class PickContextMixin {
             @WrapOperation(method = "toClipContext", at = @At(value = "INVOKE", target = "Lcom/github/exopandora/shouldersurfing/api/client/world/phys/PickContext;blockContext()Lnet/minecraft/world/level/ClipContext$Block;"))
             private ClipContext.Block wrapBlock(PickContext instance, Operation<ClipContext.Block> original) {
@@ -51,7 +51,7 @@ public class PassMixin {
     }
 
     private static class PassCollisionlessExtraMixin {
-        @Mixin(ObjectPicker.class)
+        @Mixin(value = ObjectPicker.class, remap = false)
         private static class ObjectPickerMixin {
             @WrapMethod(method = "pick")
             private HitResult wrapPick(PickContext context, double interactionRangeOverride, float partialTick, MultiPlayerGameMode gameMode, Operation<HitResult> original) {
@@ -72,7 +72,7 @@ public class PassMixin {
             }
         }
 
-        @Mixin(PickContext.class)
+        @Mixin(value = PickContext.class, remap = false)
         private static class PickContextMixin {
             @WrapOperation(method = "toClipContext", at = @At(value = "NEW", target = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/ClipContext;"))
             private ClipContext wrapBlock(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity, Operation<ClipContext> original) {
@@ -82,7 +82,7 @@ public class PassMixin {
     }
 
     private static class PassDeadMixin {
-        @Mixin(ObjectPicker.class)
+        @Mixin(value = ObjectPicker.class, remap = false)
         private static class ObjectPickerMixin {
             @WrapMethod(method = "pick")
             private HitResult wrapPick(PickContext context, double interactionRangeOverride, float partialTick, MultiPlayerGameMode gameMode, Operation<HitResult> original) {
@@ -101,7 +101,7 @@ public class PassMixin {
     }
 
     private static class PassAllyMixin {
-        @Mixin(ObjectPicker.class)
+        @Mixin(value = ObjectPicker.class, remap = false)
         private static class ObjectPickerMixin {
             @WrapMethod(method = "pick")
             private HitResult wrapPick(PickContext context, double interactionRangeOverride, float partialTick, MultiPlayerGameMode gameMode, Operation<HitResult> original) {

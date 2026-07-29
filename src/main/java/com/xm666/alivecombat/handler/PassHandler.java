@@ -1,5 +1,6 @@
 package com.xm666.alivecombat.handler;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.xm666.alivecombat.AliveCombat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -156,5 +157,14 @@ public class PassHandler {
         }
 
         return null;
+    }
+
+    public static HitResult callQueried(float partialTick, Operation<Void> original) {
+        var mc = Minecraft.getInstance();
+        var originalResult = mc.hitResult;
+        original.call(partialTick);
+        var result = mc.hitResult;
+        mc.hitResult = originalResult;
+        return result;
     }
 }

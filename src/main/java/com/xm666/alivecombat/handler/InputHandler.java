@@ -2,11 +2,11 @@ package com.xm666.alivecombat.handler;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.xm666.alivecombat.AliveCombat;
-import cpw.mods.util.Lazy;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

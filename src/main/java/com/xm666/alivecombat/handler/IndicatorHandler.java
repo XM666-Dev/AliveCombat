@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
@@ -22,35 +21,22 @@ public class IndicatorHandler {
     public static void blitSprite(
             GuiGraphics guiGraphics,
             ResourceLocation sprite,
-            float textureWidth,
-            float textureHeight,
-            float uPosition,
-            float vPosition,
             float x,
             float y,
+            float uPosition,
+            float vPosition,
             float uWidth,
             float vHeight
     ) {
-        if (uWidth == 0 || vHeight == 0) return;
-
-        var mc = Minecraft.getInstance();
-        var guiSprites = mc.getGuiSprites();
-        var textureAtlasSprite = guiSprites.getSprite(sprite);
-        var atlasLocation = textureAtlasSprite.atlasLocation();
-        var minU = textureAtlasSprite.getU(uPosition / textureWidth);
-        var maxU = textureAtlasSprite.getU((uPosition + uWidth) / textureWidth);
-        var minV = textureAtlasSprite.getV(vPosition / textureHeight);
-        var maxV = textureAtlasSprite.getV((vPosition + vHeight) / textureHeight);
-        RenderSystem.setShaderTexture(0, atlasLocation);
+        RenderSystem.setShaderTexture(0, sprite);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-
         var matrix = guiGraphics.pose().last().pose();
         var buffer = Tesselator.getInstance().getBuilder();
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.vertex(matrix, x, y, 0).uv(minU, minV).endVertex();
-        buffer.vertex(matrix, x, y + vHeight, 0).uv(minU, maxV).endVertex();
-        buffer.vertex(matrix, x + uWidth, y + vHeight, 0).uv(maxU, maxV).endVertex();
-        buffer.vertex(matrix, x + uWidth, y, 0).uv(maxU, minV).endVertex();
+        buffer.vertex(matrix, x, y, 0.0F).uv(uPosition / 256.0F, vPosition / 256.0F).endVertex();
+        buffer.vertex(matrix, x, y + vHeight, 0.0F).uv(uPosition / 256.0F, (vPosition + vHeight) / 256.0F).endVertex();
+        buffer.vertex(matrix, x + uWidth, y + vHeight, 0.0F).uv((uPosition + uWidth) / 256.0F, (vPosition + vHeight) / 256.0F).endVertex();
+        buffer.vertex(matrix, x + uWidth, y, 0.0F).uv((uPosition + uWidth) / 256.0F, (vPosition + 0.0F) / 256.0F).endVertex();
         BufferUploader.drawWithShader(buffer.end());
     }
 

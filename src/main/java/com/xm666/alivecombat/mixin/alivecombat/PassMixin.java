@@ -26,8 +26,8 @@ public class PassMixin {
     private static class PassCollisionlessMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @ModifyReceiver(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
-            private HitResult modifyHitResult(HitResult instance, @Local(argsOnly = true) Entity entity, @Local(argsOnly = true, ordinal = 1) double entityInteractionRange, @Local(argsOnly = true) float partialTick) {
+            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getLocation()Lnet/minecraft/world/phys/Vec3;", ordinal = 0))
+            private HitResult modifyHitResult(HitResult instance, @Local Entity entity, @Local(ordinal = 1) double entityInteractionRange, @Local(argsOnly = true) float partialTick) {
                 if (!PassHandler.passEnabled) return instance;
 
                 PassHandler.passCollisionless = true;
@@ -50,21 +50,32 @@ public class PassMixin {
     private static class PassCollisionlessExtraMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
-            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
+            @WrapMethod(method = "pick")
+            private void wrapPick(float partialTick, Operation<Void> original) {
+                var mc = Minecraft.getInstance();
+                var entity = mc.getCameraEntity();
+                if (entity == null) {
+                    original.call(partialTick);
+                    return;
+                }
+
                 if (PassHandler.passEnabled) {
-                    if (Config.PASS_COLLISIONLESS_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity))
-                        return original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
+                    if (Config.PASS_COLLISIONLESS_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity)) {
+                        mc.hitResult = PassHandler.callQueried(partialTick, original);
+                        return;
+                    }
                     if (Config.PASS_COLLISIONLESS_INTERACTION_BLOCKED.get()) {
-                        var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
-                        if (PassHandler.interacts(passHitResult)) return passHitResult;
+                        var passHitResult = PassHandler.callQueried(partialTick, original);
+                        if (PassHandler.interacts(passHitResult)) {
+                            mc.hitResult = passHitResult;
+                            return;
+                        }
                     }
                 }
 
                 PassHandler.passCollisionlessExtra = false;
-                var originalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
+                mc.hitResult = PassHandler.callQueried(partialTick, original);
                 PassHandler.passCollisionlessExtra = true;
-                return originalHitResult;
             }
         }
 
@@ -80,17 +91,30 @@ public class PassMixin {
     private static class PassDeadMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
-            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
-                var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
-                if (!PassHandler.passEnabled || passHitResult.getType() != HitResult.Type.BLOCK) return passHitResult;
+            @WrapMethod(method = "pick")
+            private void wrapPick(float partialTick, Operation<Void> original) {
+                var mc = Minecraft.getInstance();
+                var entity = mc.getCameraEntity();
+                if (entity == null) {
+                    original.call(partialTick);
+                    return;
+                }
+
+                var passHitResult = PassHandler.callQueried(partialTick, original);
+                if (!PassHandler.passEnabled || passHitResult.getType() != HitResult.Type.BLOCK) {
+                    mc.hitResult = passHitResult;
+                    return;
+                }
 
                 PassHandler.passDead = false;
-                var orignalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
+                var orignalHitResult = PassHandler.callQueried(partialTick, original);
                 PassHandler.passDead = true;
-                if (orignalHitResult.getType() != HitResult.Type.ENTITY) return passHitResult;
+                if (orignalHitResult.getType() != HitResult.Type.ENTITY) {
+                    mc.hitResult = passHitResult;
+                    return;
+                }
 
-                return PassHandler.filterHitResult(passHitResult, entity.getEyePosition(partialTick));
+                mc.hitResult = PassHandler.filterHitResult(passHitResult, entity.getEyePosition(partialTick));
             }
         }
 
@@ -110,21 +134,32 @@ public class PassMixin {
     private static class PassAllyMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @WrapMethod(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;")
-            private HitResult wrapPick(Entity entity, double blockInteractionRange, double entityInteractionRange, float partialTick, Operation<HitResult> original) {
+            @WrapMethod(method = "pick")
+            private void wrapPick(float partialTick, Operation<Void> original) {
+                var mc = Minecraft.getInstance();
+                var entity = mc.getCameraEntity();
+                if (entity == null) {
+                    original.call(partialTick);
+                    return;
+                }
+
                 if (PassHandler.passEnabled) {
-                    if (Config.PASS_ALLY_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity))
-                        return original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
+                    if (Config.PASS_ALLY_HOLDING_TOOL.get() && PassHandler.isHoldingTools(entity)) {
+                        mc.hitResult = PassHandler.callQueried(partialTick, original);
+                        return;
+                    }
                     if (Config.PASS_ALLY_INTERACTION_BLOCKED.get()) {
-                        var passHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
-                        if (PassHandler.interacts(passHitResult)) return passHitResult;
+                        var passHitResult = PassHandler.callQueried(partialTick, original);
+                        if (PassHandler.interacts(passHitResult)) {
+                            mc.hitResult = passHitResult;
+                            return;
+                        }
                     }
                 }
 
                 PassHandler.passAlly = false;
-                var originalHitResult = original.call(entity, blockInteractionRange, entityInteractionRange, partialTick);
+                mc.hitResult = PassHandler.callQueried(partialTick, original);
                 PassHandler.passAlly = true;
-                return originalHitResult;
             }
         }
 

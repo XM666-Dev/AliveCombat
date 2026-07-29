@@ -17,8 +17,8 @@ public class MixinConfigPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        var container = new MinecraftModContainer(FMLLoader.getLoadingModList().getModFileById(AliveCombat.MODID).getMods().getFirst());
-        container.registerConfig(ModConfig.Type.STARTUP, MixinConfig.SPEC);
+        var container = new MinecraftModContainer(FMLLoader.getLoadingModList().getModFileById(AliveCombat.MODID).getMods().get(0));
+        Config.registerConfig(ModConfig.Type.CLIENT, MixinConfig.SPEC, container, "startup");
         this.mixinPackage = mixinPackage;
     }
 
