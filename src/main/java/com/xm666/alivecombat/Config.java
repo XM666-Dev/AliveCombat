@@ -19,6 +19,12 @@ public class Config {
     public static final ModConfigSpec.DoubleValue AUTO_ATTACK_DURATION = BUILDER
             .defineInRange("autoAttackDuration", 5.0D, 0.0D, Double.MAX_VALUE);
 
+    public static final ModConfigSpec.BooleanValue AUTO_ATTACK_FAST = BUILDER
+            .define("autoAttackFast", false);
+
+    public static final ModConfigSpec.BooleanValue AUTO_ATTACK_WAIT_INVULNERABLE = BUILDER
+            .define("autoAttackWaitInvulnerable", false);
+
     public static final ModConfigSpec.BooleanValue PASS_COLLISIONLESS_HOLDING_TOOL = BUILDER
             .define("passCollisionlessHoldingTool", true);
 
