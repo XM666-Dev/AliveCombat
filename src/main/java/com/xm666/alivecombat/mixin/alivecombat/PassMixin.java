@@ -26,8 +26,8 @@ public class PassMixin {
     private static class PassCollisionlessMixin {
         @Mixin(GameRenderer.class)
         private static class GameRendererMixin {
-            @ModifyVariable(method = "pick", at = @At(value = "LOAD", ordinal = 1), name = "d1")
-            private double modifyDistanceSquare(double distanceSquare, @Local(argsOnly = true) float partialTick, @Local Entity entity, @Local(name = "entityReach") double entityInteractionRange, @Local Vec3 eyePosition) {
+            @ModifyVariable(method = "pick", at = @At(value = "LOAD", ordinal = 3), name = "d1")
+            private double modifyDistanceSquare(double distanceSquare, @Local(argsOnly = true) float partialTick, @Local Entity entity, @Local(name = "entityReach") double entityInteractionRange, @Local(name = "vec3") Vec3 eyePosition) {
                 if (!PassHandler.passEnabled) return distanceSquare;
 
                 PassHandler.passCollisionless = true;
