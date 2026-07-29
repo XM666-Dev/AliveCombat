@@ -10,8 +10,6 @@
   "alivecombat.configuration.autoAttackDuration.tooltip": "使用单击模式时，自动攻击持续的时长。\n以游戏刻为单位。",
   "alivecombat.configuration.autoAttackFast": "自动攻击快速模式",
   "alivecombat.configuration.autoAttackFast.tooltip": "使用长按模式时，在攻击冷却完成时立刻进行自动攻击，牺牲微量伤害来提高攻击速度。",
-  "alivecombat.configuration.autoAttackWaitInvulnerable": "自动攻击等待无敌时间",
-  "alivecombat.configuration.autoAttackWaitInvulnerable.tooltip": "使用长按模式时，仅在目标无敌时间结束时进行自动攻击。",
   "alivecombat.configuration.passCollisionlessHoldingTool": "手持工具时瞄准穿透虚体方块",
   "alivecombat.configuration.passCollisionlessHoldingTool.tooltip": "在玩家手持工具时，启用瞄准穿透虚体方块功能。",
   "alivecombat.configuration.passCollisionlessInteractionBlocked": "交互阻塞时瞄准穿透虚体方块",

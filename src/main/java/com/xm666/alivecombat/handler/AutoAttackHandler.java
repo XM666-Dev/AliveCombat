@@ -23,7 +23,7 @@ public class AutoAttackHandler {
 
     public static boolean isAttackReady() {
         var mc = Minecraft.getInstance();
-        if (!(mc.hitResult instanceof EntityHitResult entityHitResult)) return false;
+        if (!(mc.hitResult instanceof EntityHitResult)) return false;
 
         return switch (Config.AUTO_ATTACK_MODE.get()) {
             case CLICK -> {
@@ -36,13 +36,8 @@ public class AutoAttackHandler {
             case PRESS -> {
                 if (!mc.options.keyAttack.isDown()) yield false;
 
-                var target = entityHitResult.getEntity();
-                if (Config.AUTO_ATTACK_WAIT_INVULNERABLE.get() && target.invulnerableTime > 10.0F) yield false;
-
                 var scale = mc.player.getAttackStrengthScale(0.5F);
-                if (Config.AUTO_ATTACK_FAST.get()) yield scale > 0.9F;
-
-                yield scale >= 1.0F;
+                yield Config.AUTO_ATTACK_FAST.get() ? scale > 0.9F : scale >= 1.0F;
             }
         };
     }
