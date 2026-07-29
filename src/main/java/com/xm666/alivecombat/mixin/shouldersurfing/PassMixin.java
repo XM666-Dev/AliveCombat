@@ -29,8 +29,8 @@ public class PassMixin {
             @Shadow
             public abstract BlockHitResult pickBlocks(PickContext context, double interactionRange, float partialTick);
 
-            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/BlockHitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
-            private BlockHitResult modifyHitResult(BlockHitResult instance, PickContext context, @Local(argsOnly = true) Player player, @Local(name = "interactionRange") double interactionRange, @Local(argsOnly = true) float partialTick) {
+            @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/HitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
+            private HitResult modifyHitResult(HitResult instance, PickContext context, @Local(argsOnly = true) Player player, @Local(name = "interactionRange") double interactionRange, @Local(argsOnly = true) float partialTick) {
                 if (!PassHandler.passEnabled) return instance;
 
                 PassHandler.passCollisionless = true;
