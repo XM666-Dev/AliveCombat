@@ -49,7 +49,8 @@ public class AttackParticleHandler {
 
         var partialType = getParticleType();
         var hitPoint = optionalHitPoint.get();
-        var position = hitPoint.subtract(viewVector.scale(0.5));
+        var lerpedHitPoint = new Vec3(hitPoint.x, (hitPoint.y + target.getY(0.5)) * 0.5, hitPoint.z);
+        var position = lerpedHitPoint.subtract(viewVector.scale(0.5));
         var roll = getParticleRoll(isCriticalHit, isSprintHit);
         sendParticles(partialType, position.x, position.y, position.z, 0, 0.0, roll, 0.0, 1.0);
     }

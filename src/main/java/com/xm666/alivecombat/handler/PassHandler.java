@@ -85,7 +85,7 @@ public class PassHandler {
     }
 
     public static boolean interacts(HitResult hitResult) {
-        return interactsEntity(hitResult) || interactsBlock(hitResult) || interactsItem();
+        return interactsEntity(hitResult) || interactsBlock(hitResult);
     }
 
     private static boolean interactsEntity(HitResult hitResult) {
@@ -125,20 +125,6 @@ public class PassHandler {
         var blockClass = block.getClass();
         return declaresMethod(blockClass, BlockBehaviour.class, "useItemOn", ItemStack.class, BlockState.class, Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class)
                 || declaresMethod(blockClass, BlockBehaviour.class, "useWithoutItem", BlockState.class, Level.class, BlockPos.class, Player.class, BlockHitResult.class);
-    }
-
-    private static boolean interactsItem() {
-        var mc = Minecraft.getInstance();
-        var player = mc.player;
-        for (var hand : InteractionHand.values()) {
-            var stack = player.getItemInHand(hand);
-            var item = stack.getItem();
-            var itemClass = item.getClass();
-            if (declaresMethod(itemClass, Item.class, "use", Level.class, Player.class, InteractionHand.class))
-                return true;
-        }
-
-        return false;
     }
 
     private static boolean declaresMethod(Class<?> clazz, Class<?> baseClass, String name, Class<?>... parameterTypes) {

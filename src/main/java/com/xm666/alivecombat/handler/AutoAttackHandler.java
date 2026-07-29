@@ -23,7 +23,7 @@ public class AutoAttackHandler {
     public static boolean canContinueAttack = true;
     public static boolean disableSwingHand = false;
 
-    public static boolean readyAttack() {
+    public static boolean isAttackReady() {
         var mc = Minecraft.getInstance();
         if (!(mc.hitResult instanceof EntityHitResult)) return false;
 
@@ -35,7 +35,12 @@ public class AutoAttackHandler {
                 }
                 yield running;
             }
-            case PRESS -> mc.player.getAttackStrengthScale(0.5F) > 0.9F && mc.options.keyAttack.isDown();
+            case PRESS -> {
+                if (!mc.options.keyAttack.isDown()) yield false;
+
+                var scale = mc.player.getAttackStrengthScale(0.5F);
+                yield Config.AUTO_ATTACK_FAST.get() ? scale > 0.9F : scale >= 1.0F;
+            }
         };
     }
 

@@ -1,5 +1,6 @@
 package com.xm666.alivecombat.handler;
 
+import com.xm666.alivecombat.compat.SpartanWeaponryHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.ToolActions;
@@ -11,6 +12,10 @@ public class HeldAttackHandler {
         if (!(entity instanceof LivingEntity living) || !living.isUsingItem()) return false;
 
         var stack = living.getUseItem();
-        return !stack.isEmpty() && stack.canPerformAction(ToolActions.SHIELD_BLOCK);
+        if (stack.isEmpty()) return false;
+
+        return stack.canPerformAction(ItemAbilities.SHIELD_BLOCK)
+                || ModList.get().isLoaded("spartan_weaponry_unofficial")
+                && SpartanWeaponryHandler.canMeleeBlock(stack);
     }
 }

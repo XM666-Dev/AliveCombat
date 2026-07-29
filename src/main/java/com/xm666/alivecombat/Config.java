@@ -26,6 +26,9 @@ public class Config {
     public static final ForgeConfigSpec.DoubleValue AUTO_ATTACK_DURATION = BUILDER
             .defineInRange("autoAttackDuration", 5.0D, 0.0D, Double.MAX_VALUE);
 
+    public static final ForgeConfigSpec.BooleanValue AUTO_ATTACK_FAST = BUILDER
+            .define("autoAttackFast", false);
+
     public static final ForgeConfigSpec.BooleanValue PASS_COLLISIONLESS_HOLDING_TOOL = BUILDER
             .define("passCollisionlessHoldingTool", true);
 

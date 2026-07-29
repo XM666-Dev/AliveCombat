@@ -156,6 +156,7 @@ dependencies {
         jarJar.ranged(it, "[0.5.4,)")
     }
     implementation fg.deobf("curse.maven:shoulder-surfing-reloaded-243190:8444973")
+    implementation fg.deobf("curse.maven:spartan-weaponry-278141:6842571")
 }
 
 mixin {
