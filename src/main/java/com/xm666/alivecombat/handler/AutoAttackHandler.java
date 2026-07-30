@@ -1,6 +1,5 @@
 package com.xm666.alivecombat.handler;
 
-import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.Config;
 import com.xm666.alivecombat.MixinConfig;
 import com.xm666.alivecombat.compat.ShoulderSurfingHandler;
@@ -15,7 +14,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 public class AutoAttackHandler {
@@ -75,9 +73,8 @@ public class AutoAttackHandler {
     }
 
     @OnlyIn(Dist.CLIENT)
-    @Mod(value = AliveCombat.MODID)
     public static class AutoAttackConfig {
-        public AutoAttackConfig(IEventBus modEventBus) {
+        public static void init(IEventBus modEventBus) {
             modEventBus.register(AutoAttackConfig.class);
         }
 

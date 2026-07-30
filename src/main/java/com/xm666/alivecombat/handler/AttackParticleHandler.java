@@ -1,6 +1,5 @@
 package com.xm666.alivecombat.handler;
 
-import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.MixinConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
@@ -18,7 +17,6 @@ import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -100,9 +98,8 @@ public class AttackParticleHandler {
     }
 
     @OnlyIn(Dist.CLIENT)
-    @Mod(value = AliveCombat.MODID)
     public static class AttackParticleConfig {
-        public AttackParticleConfig(IEventBus modEventBus) {
+        public static void init(IEventBus modEventBus) {
             modEventBus.register(AttackParticleConfig.class);
         }
 

@@ -14,9 +14,11 @@ public class AliveCombat {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public AliveCombat(FMLJavaModLoadingContext context) {
-        new Config(context.getContainer());
-        new AttackParticleHandler.AttackParticleConfig(context.getModEventBus());
-        new AutoAttackHandler.AutoAttackConfig(context.getModEventBus());
-        new InputHandler(context.getModEventBus());
+        var container = context.getContainer();
+        var eventBus = context.getModEventBus();
+        Config.init(container);
+        AttackParticleHandler.AttackParticleConfig.init(eventBus);
+        AutoAttackHandler.AutoAttackConfig.init(eventBus);
+        InputHandler.init(eventBus);
     }
 }

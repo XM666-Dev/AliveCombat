@@ -5,7 +5,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
@@ -16,7 +15,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 @OnlyIn(Dist.CLIENT)
-@Mod(value = AliveCombat.MODID)
 public class Config {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
@@ -43,7 +41,7 @@ public class Config {
 
     private static final ForgeConfigSpec SPEC = BUILDER.build();
 
-    public Config(ModContainer container) {
+    public static void init(ModContainer container) {
         registerConfig(ModConfig.Type.CLIENT, SPEC, container);
     }
 
