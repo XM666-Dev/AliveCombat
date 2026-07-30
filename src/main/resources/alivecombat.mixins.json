@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "com.xm666.alivecombat.mixin",
+  "refmap": "alivecombat.mixins.refmap.json",
   "plugin": "com.xm666.alivecombat.MixinConfigPlugin",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
