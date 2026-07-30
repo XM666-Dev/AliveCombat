@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.xm666.alivecombat.handler.AttackParticleHandler;
 import com.xm666.alivecombat.handler.AutoAttackHandler;
 import com.xm666.alivecombat.handler.InputHandler;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -14,8 +16,10 @@ public class AliveCombat {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public AliveCombat(FMLJavaModLoadingContext context) {
-        var container = context.getContainer();
-        var eventBus = context.getModEventBus();
+        this(context.getContainer(), context.getModEventBus());
+    }
+
+    public AliveCombat(ModContainer container, IEventBus eventBus) {
         Config.init(container);
         AttackParticleHandler.AttackParticleConfig.init(eventBus);
         AutoAttackHandler.AutoAttackConfig.init(eventBus);
