@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -57,7 +58,7 @@ public class PassHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var weapon = living.getMainHandItem();
-        return weapon.is(Tags.Items.TOOLS);
+        return weapon.is(ItemTags.SWORDS) || weapon.is(ItemTags.AXES) || weapon.is(Tags.Items.TOOLS_TRIDENTS) || weapon.is(ItemTags.PICKAXES);
     }
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {

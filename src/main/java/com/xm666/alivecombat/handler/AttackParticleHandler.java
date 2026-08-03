@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -27,7 +28,8 @@ public class AttackParticleHandler {
         if (!player.isLocalPlayer()) return false;
 
         var weapon = player.getMainHandItem();
-        if (!weapon.is(Tags.Items.TOOLS)) return false;
+        if (!weapon.is(ItemTags.SWORDS) && !weapon.is(ItemTags.AXES) && !weapon.is(Tags.Items.TOOLS_TRIDENTS))
+            return false;
 
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         return attackStrengthScale > 0.9F;
