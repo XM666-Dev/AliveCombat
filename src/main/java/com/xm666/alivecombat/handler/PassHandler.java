@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,7 +28,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.Tags;
 
 import java.lang.reflect.Method;
 
@@ -54,7 +54,7 @@ public class PassHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var weapon = living.getMainHandItem();
-        return weapon.is(Tags.Items.TOOLS);
+        return weapon.is(ItemTags.WEAPON_ENCHANTABLE) || weapon.is(ItemTags.TRIDENT_ENCHANTABLE) || weapon.is(ItemTags.PICKAXES);
     }
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {

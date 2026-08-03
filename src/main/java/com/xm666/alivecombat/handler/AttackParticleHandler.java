@@ -7,6 +7,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 
 public class AttackParticleHandler {
@@ -28,7 +28,7 @@ public class AttackParticleHandler {
         if (!player.isLocalPlayer()) return false;
 
         var weapon = player.getMainHandItem();
-        if (!weapon.is(Tags.Items.TOOLS)) return false;
+        if (!weapon.is(ItemTags.WEAPON_ENCHANTABLE) && !weapon.is(ItemTags.TRIDENT_ENCHANTABLE)) return false;
 
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         return attackStrengthScale > 0.9F;
