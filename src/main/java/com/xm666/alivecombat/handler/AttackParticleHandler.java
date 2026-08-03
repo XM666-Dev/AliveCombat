@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -28,7 +29,7 @@ public class AttackParticleHandler {
         if (!player.isLocalPlayer()) return false;
 
         var weapon = player.getMainHandItem();
-        if (!weapon.is(ItemTags.SWORDS) && !weapon.is(ItemTags.AXES) && !weapon.is(ItemTags.TRIDENT_ENCHANTABLE))
+        if (!weapon.is(ItemTags.SWORDS) && !weapon.is(ItemTags.AXES) && !weapon.is(Items.TRIDENT))
             return false;
 
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
