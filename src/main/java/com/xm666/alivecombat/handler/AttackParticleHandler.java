@@ -28,7 +28,8 @@ public class AttackParticleHandler {
         if (!player.isLocalPlayer()) return false;
 
         var weapon = player.getMainHandItem();
-        if (!weapon.is(ItemTags.WEAPON_ENCHANTABLE) && !weapon.is(ItemTags.TRIDENT_ENCHANTABLE)) return false;
+        if (!weapon.is(ItemTags.SWORDS) && !weapon.is(ItemTags.AXES) && !weapon.is(ItemTags.TRIDENT_ENCHANTABLE))
+            return false;
 
         var attackStrengthScale = player.getAttackStrengthScale(0.5F);
         return attackStrengthScale > 0.9F;

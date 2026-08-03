@@ -54,7 +54,7 @@ public class PassHandler {
         if (!(entity instanceof LivingEntity living)) return false;
 
         var weapon = living.getMainHandItem();
-        return weapon.is(ItemTags.WEAPON_ENCHANTABLE) || weapon.is(ItemTags.TRIDENT_ENCHANTABLE) || weapon.is(ItemTags.PICKAXES);
+        return weapon.is(ItemTags.SWORDS) || weapon.is(ItemTags.AXES) || weapon.is(ItemTags.TRIDENT_ENCHANTABLE) || weapon.is(ItemTags.PICKAXES);
     }
 
     public static ClipContext getPassClipContext(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity) {
