@@ -12,4 +12,9 @@ public class ShoulderSurfingHandler {
         var shoulderSurfing = (ShoulderSurfingImpl) ShoulderSurfing.getInstance();
         shoulderSurfing.getInputHandler().tick();
     }
+
+    public static boolean isShoulderSurfing() {
+        var shoulderSurfing = ShoulderSurfing.getInstance();
+        return shoulderSurfing.isShoulderSurfing();
+    }
 }
