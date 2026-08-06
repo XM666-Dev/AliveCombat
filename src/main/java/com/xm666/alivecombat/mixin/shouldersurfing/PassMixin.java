@@ -25,9 +25,9 @@ import org.spongepowered.asm.mixin.injection.At;
 @OnlyIn(Dist.CLIENT)
 public class PassMixin {
     private static class PassCollisionlessMixin {
-        @Mixin(value = ObjectPicker.class, remap = false)
+        @Mixin(ObjectPicker.class)
         private static abstract class ObjectPickerMixin {
-            @Shadow
+            @Shadow(remap = false)
             public abstract BlockHitResult pickBlocks(PickContext context, double interactionRange, float partialTick);
 
             @ModifyReceiver(method = "pick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/BlockHitResult;getLocation()Lnet/minecraft/world/phys/Vec3;"))
@@ -72,7 +72,7 @@ public class PassMixin {
             }
         }
 
-        @Mixin(value = PickContext.class, remap = false)
+        @Mixin(PickContext.class)
         private static class PickContextMixin {
             @WrapOperation(method = "toClipContext", at = @At(value = "NEW", target = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/ClipContext$Block;Lnet/minecraft/world/level/ClipContext$Fluid;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/ClipContext;"))
             private ClipContext wrapBlock(Vec3 from, Vec3 to, ClipContext.Block block, ClipContext.Fluid fluid, Entity entity, Operation<ClipContext> original) {
