@@ -2,6 +2,7 @@ package com.xm666.alivecombat.handler;
 
 import com.xm666.alivecombat.AliveCombat;
 import com.xm666.alivecombat.MixinConfig;
+import com.xm666.alivecombat.compat.ShoulderSurfingHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -39,6 +41,13 @@ public class AttackParticleHandler {
         var boundingBox = target.getBoundingBox();
         var eyePosition = player.getEyePosition(partialTick);
         var viewVector = player.getViewVector(partialTick);
+        var isShoulderSurfing = ModList.get().isLoaded("shouldersurfing") && ShoulderSurfingHandler.isShoulderSurfing();
+        if (isShoulderSurfing) {
+            var camera = mc.gameRenderer.getMainCamera();
+            eyePosition = camera.getPosition();
+            viewVector = new Vec3(camera.getLookVector());
+        }
+
         var entityInteractionRange = player.entityInteractionRange();
         var hitVector = viewVector.scale(entityInteractionRange);
         var hitPosition = eyePosition.add(hitVector);
