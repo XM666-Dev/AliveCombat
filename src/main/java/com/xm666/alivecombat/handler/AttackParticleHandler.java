@@ -44,8 +44,8 @@ public class AttackParticleHandler {
         var isShoulderSurfing = ModList.get().isLoaded("shouldersurfing") && ShoulderSurfingHandler.isShoulderSurfing();
         if (isShoulderSurfing) {
             var camera = mc.gameRenderer.getMainCamera();
-            eyePosition = camera.getPosition();
-            viewVector = new Vec3(camera.getLookVector());
+            eyePosition = camera.position();
+            viewVector = new Vec3(camera.forwardVector());
         }
 
         var entityInteractionRange = player.entityInteractionRange();
